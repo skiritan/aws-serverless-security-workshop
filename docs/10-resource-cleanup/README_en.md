@@ -1,37 +1,36 @@
-# リソースのクリーンアップ
+# Resource clean up
 
-このページでは、各モジュールで作成したリソースをクリーンアップする手順を説明します。 
+This page provides instructions for cleaning up the resources created during the preceding modules.
 
-## リソースのクリーンアップ手順
+## Resource Cleanup Instructions
 
-1. **モジュール1：認証**で作成したCognito User pool domain を削除します 
+1. Delete Cognito User pool domain that you created if you created one in **Module 1: Auth**
 
-  <details>
-  <summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
+	<details>
+	<summary><strong>Click here to expand for detailed instructions </strong></summary><p>
+	
+	1. Go to the [Cognito Console](https://console.aws.amazon.com/cognito/home)
+	1. Go to **Manage User Pools**
+	1. Choose `CustomizeUnicorns-users` user pool
+	1. Go to **Domain name** under **App integration**
+	1. Click **Delete domain** 
+	1. Confirm the deletion
 
+	</details>
 
-  1. [Cognito Console](https://console.aws.amazon.com/cognito/home)に移動します
-  1. **Manage User Pools**に移動します
-  1. `CustomizeUnicorns-users` user poolを選択します
-  1. **App integration**の**Domain name**に移動します
-  1. **Delete domain** をクリックします
-  1. 確認して削除します
+1. Delete API Gateway Usage plan if you created one in **Module 5: Usage Plans**
 
-  </details>
+	<details>
+	<summary><strong>Click here to expand for detailed instructions </strong></summary><p>
+	
+	1. Go to the [API Gateway Console](https://console.aws.amazon.com/apigateway/home)
+	1. Go to **Usage plans**
+	1. Go to the `Basic` Usage Plan
+	1. In the **Details** tab under **Associated API Stages**, remove the `CustomizeUnicorns` API
+	1. On the upper right hand corner, click on **Actions** and choose **Delete Usage Plan**
+ 
+	</details>
 
-1. **モジュール5：使用プランで** API Gateway Usage Planを削除します 
-
-  <details>
-  <summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
-
-
-  1. [API Gateway Console](https://console.aws.amazon.com/apigateway/home) に移動します
-  1. **Usage plans** に移動します
-  1. `Basic` Usage Planに移動します
-  1. In the **Details** tab under **Associated API Stages**, remove the `CustomizeUnicorns` API
-  1. On the upper right hand corner, click on **Actions** and choose **Delete Usage Plan**
-
-  </details>
 
 1. Delete the secret from AWS Secrets Manager if you created one in **Module 2: Secrets**
 
@@ -57,12 +56,13 @@
 	1. Remove all rules from the web ACL by choosing the **x** at the right of the row for each rule. This doesn't delete the rules from AWS WAF, it just removes the rules from this web ACL.
 	1. Choose **Update**
 	1. Dissasociate the API gateway from the WAF by going to the section **AWS resources using this web ACL** in the **Rules** tab and clicking the  **x** at the right of the API gateway stage
-	1. On the **Web ACLs** page, confirm that the web ACL that you want to delete is selected, and then choose **Delete**. 
-	1. In the navigation pane, choose **Rules**.  
+	1. On the **Web ACLs** page, confirm that the web ACL that you want to delete is selected, and then choose **Delete**.
+ 	1. In the navigation pane, choose **Rules**. 
 	1. Go to each of the 3 rules we created, edit the rule to disassociate all the conditions for each rule
 	1. Delete the rules
 	1. Delete the 3 conditions we created in the workshop
 	</details>
+
 
 1. Delete `CustomizeUnicorns` CloudFormation stack
 
@@ -80,15 +80,16 @@
 	<details>
 	<summary><strong>Click here to expand for detailed instructions </strong></summary><p>
 
+
 	1. Go to the [S3 Console](https://console.aws.amazon.com/s3/home)
 	1. Search for bucket starting with `secure-serverless-deploymentss3bucket`
 	1. Click on the checkmark for the bucket and click on the **Empty** button
-	
+
 		![](images/empty-s3-bucket.png)
 	
 	1. Type in the bucket name to confirm the empty operation 
 	</details>
-
+	
 1. Delete the `Secure-Serverless` resource setup CloudFormation stack
 
 1. CloudWatch Logs

@@ -1,193 +1,139 @@
-# Module 0: Initial Setup
+# モジュール0：初期セットアップ
 
-In this set up module, you will deploy a simple serverless application, which you will learn to secure in the following modules. You will create an REST API endpoint so partner companies of Wild Rydes can submit unicorn customizations such as branded socks and capes to advertise their company. Below is a high level architecture of what you will be deploying: 
+このモジュールでは、サーバーレスアプリケーションをデプロイします。これは、以後のワークショップでセキュリティを向上させていくために利用します。Wild Rydesのパートナー企業がブランドソックスやケープなどのユニコーンカスタマイズを送信して会社を宣伝できるように、REST APIエンドポイントを作成します。下記は、展開するアーキテクチャの概要です。 
 
 ![base-architecture](images/00-base-architecture.png)
 
 
-## Prerequisites
 
-If you are completing this workshop at an AWS-sponsored event where an AWS account is provided for you, you will be using **AWS Event Engine**. In this case, the prerequisites is already met and you can move on to next step. 
+## 前提条件
 
-If you not not using AWS Event Engine, expand below to see prerequisites: 
+### AWS アカウント
+このワークショップでは、Cloud9、Cognito、API Gateway、Lambda、RDS、WAF、Secrets Manager、IAM ポリシー、IAMロールを利用します。このAWSリソースを作成、管理するためAWSアカウントとアクセス権が必要です。
 
-<details>
-<summary><strong> Prerequisites if you are not using AWS Event Engine </strong></summary><p>
+このワークショップの手順は、一度に1人の参加者のみが特定のAWSアカウントを使用していることを前提としています。別の参加者とアカウントを共有しようとすると、特定のリソースで名前の競合が発生する場合があります。個別のリージョンを使用することでこの問題を回避できますが、この作業を行うための手順は記載されていません。 
 
-
-### AWS Account
-In order to complete this workshop, you'll need an AWS account and access to create and manage the AWS resources that are used in this workshop, including Cloud9, Cognito, API Gateway, Lambda, RDS, WAF, Secrets Manager, and IAM policies and roles.
-
-The code and instructions in this workshop assume only one participant is using a given AWS account at a time. If you attempt sharing an account with another participant, you may encounter naming conflicts for certain resources. You can work around this by using distinct Regions, but the instructions do not provide details on the changes required to make this work.
-
-Please make sure not to use a production AWS environment or account for this workshop. It is recommended to instead use a **development account** which provides **full access** to the necessary services so that you do not run into permissions issues.
+本番用のAWS環境、アカウントを使用しないでください。代わりに、必要なサービスへの**フルアクセス**できる権限をもった**検証アカウント**を使用することをお勧めします。 
 
 
-### Region Selection
-Use a single region for the entirety of this workshop. This workshop supports two regions in North America and 1 region in Europe. Choose one region from the launch stack links below and continue to use that region for all of the workshop activities.
-
-</details>
-
-## Module-0A: Create a VPC and Cloud9 environment required for this workshop
-
-A VPC is required for our workshop so we can:
-
-* Leverage a Cloud9 environment as our IDE (integrated development environment)
-* Use an RDS Aurora MySQL database as the backend database for our serverless application. 
-
-A CloudFormation setup has been prepared to spin up these resources:
-
-* A **VPC** with 4 subnets, 2 private and 2 public. 
-* A **Cloud9** environment where you will be developing and launching the rest of the workshop resources from.
-* A **MySQL Aurora RDS database** (the primary DB instance may reside in either of the 2 private subnets)
-
-![initial resources diagram](images/0C-diagram-with-aurora.png)
 
 
-In addition, it also creates the below resources
-
-* A **S3 bucket** you will later use for packaging and uploading lambda function code 
-* A **Security Group** that will be used by the lambda functions
-
-**Choose and click on the option below according to your situation and follow its instructions:**
-
-If you are completing this workshop at an AWS-sponsored event where an AWS account is provided for you, you will be using **AWS Event Engine**. Choose **Option 1** below. Otherwise, choose **Option 2**. 
-<details>
-<summary><strong> Option 1: If you are using AWS Event Engine </strong></summary><p>
-If you are using AWS Event Engine, an AWS CloudFormation stack should be automatically created for you.
- 
- 
-1. Go to [https://dashboard.eventengine.run](https://dashboard.eventengine.run)
-1. In the next screen, put in the hash code you received from the event organizer, and click **Proceed**
-
-   ![event-engine-login](images/00-event-engine-login.png)
-
-1. Log into the the AWS console in the event engine account by clicking on **AWS Console**
-
-   ![](images/00-event-engine-console-login.png)
-
-1. Click on **Open AWS Console** or use the **Copy Login Link** button and open the copied URL in **Chrome** or **Firefox**
-    
-    ![](images/00-event-engine-console-login-2.png)
-    
-1. Type in `CloudFormation` in the **Find Services** search bar to go to the CloudFormation console
-1. You should see 2 stacks that have been created:
-   * one named something like `mod-3269ecbd5edf43ac` This is the ***main setup stack*** containing the setup resources.
-   * one with name similar to `aws-cloud9-Secure-Serverless-Cloud9-<alphanumeric-letters>`. This is a nested stack responsible for creating the Cloud9 environment.
-1. Select the ***main setup stack*** (name starting with `mod-`), go to the **Outputs** tab. Keep this browser tab open as you go through rest of the workshop. 
-
-    ![](images/00-ee-cloudformation.png)
-    
-</details>
-
-<details>
-<summary><strong> Option 2: If you are working in your own AWS account</strong></summary><p>
+### リージョンの選択
+このワークショップは全体を通して１つのリージョンを使用します。このワークショップは、北米の2つのリージョンとヨーロッパの1つのリージョンをサポートしています。以下の起動スタックリンクから1つのリージョンを選択し、以後そのリージョンを使用し続けてください。
 
 
-If you are working in your own AWS account, follow the steps below to launch a CloudFormation template that will set up initial resources for you
 
-1. Select the desired region. Since we are going to use services like Aurora or Cloud9, please choose one of these following and click the corresponding **Launch Stack** link
+## モジュール-0A：このワークショップに必要なVPCおよびCloud9環境を作成します
 
-	&#128161; **When clicking on any link in this instruction, hold the ⌘ (mac) or Ctrl (Windows) so the links open in a new tab** &#128161;
 
-	Region| Code | Launch
+下記を作成します。
+
+* Cloud9環境：IDEとして利用します（統合開発環境）
+* RDS Aurora MySQL ：サーバーレスアプリケーションのバックエンドデータベースとして利用します
+
+以下の手順に従って、セットアップリソース（VPC、Cloud9環境など）を作成します。 
+
+1. いずれかのリージョンを選択して、[ **Launch Stack** ] リンクをクリックしてください。AuroraやCloud9などのサービスを作成します、
+
+	💡 **リンクをクリックするときは、⌘（mac）またはCtrl（Windows）を押したままにして、新しいタブで開くようにします** 💡
+
+	リージョン| リージョンコード | リンク 
 	------|------|-------
-	EU (Ireland) | <span style="font-family:'Courier';">eu-west-1</span> | [![Launch setup resource in eu-west-1](images/cfn-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Secure-Serverless&templateURL=https://s3.amazonaws.com/wildrydes-us-east-1/Security/init-template.yml)
-	US West (Oregon) | <span style="font-family:'Courier';">us-west-2</span> | [![Launch setup resource in us-west-2](images/cfn-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=Secure-Serverless&templateURL=https://s3.amazonaws.com/wildrydes-us-east-1/Security/init-template.yml)
-	US East (N. Virginia) | <span style="font-family:'Courier';">us-east-1</span> | [![Launch setup resource in us-east-1](images/cfn-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=Secure-Serverless&templateURL=https://s3.amazonaws.com/wildrydes-us-east-1/Security/init-template.yml)
+	EU (アイルランド) | <span style="font-family:'Courier';">eu-west-1</span> | [![Launch setup resource in eu-west-1](images/cfn-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=Secure-Serverless&templateURL=https://s3.amazonaws.com/wildrydes-us-east-1/Security/init-template.yml)
+	US West (オレゴン) | <span style="font-family:'Courier';">us-west-2</span> | [![Launch setup resource in us-west-2](images/cfn-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=Secure-Serverless&templateURL=https://s3.amazonaws.com/wildrydes-us-east-1/Security/init-template.yml)
+	US East (バージニア北部) | <span style="font-family:'Courier';">us-east-1</span> | [![Launch setup resource in us-east-1](images/cfn-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=Secure-Serverless&templateURL=https://s3.amazonaws.com/wildrydes-us-east-1/Security/init-template.yml)
 
-1. 	Click **Next**
-1. In the **Step 2: Specify stack details** page:
-	* name you stack ***`Secure-Serverless`***
-	* for the database password, use ***`Corp123!`***
-	and click **Next**
+1. **次へ**をクリックします 
+
+1. [ **ステップ2：スタックの詳細を指定** ]ページで： 
 	
-		> Note: you can specify a different password here if you prefer. However, the password must be at least 8 character long.  And if you do this, you would later need to change the lambda function code in module-0D to use the password you specified in the `src/app/dbUtils.js` file.
+	* スタックの名前  ***`Secure-Serverless`***
+	* データベースのパスワード ***`Corp123!`***
+	を入力して [ **次へ** ]をクリックします 
 	
-1. In the **Step 3:Configure stack options** page, accept the default configurations and click **Next**
-1. Review the configuration and click **Create stack**
-1. While you are waiting for the completion of the CloudFormation stack creation, check if you have **PostMan** installed on your laptop. If not, download and install it at: [https://www.getpostman.com](https://www.getpostman.com), we will need to use it later. 
+		> 注：別のパスワードも指定できます。ただし、パスワードは8文字以上である必要があります。また、後で`src/app/dbUtils.js`ファイルで指定したパスワードを使用するようにmodule-0DのLambda関数のコードを変更する必要があります。 
+	
+1. [ **ステップ3：スタックオプションの 設定**]ページで、そのまま[ **次へ** ]をクリックします
 
-1. It will take a few minutes for the Stack to create. Choose the **Stack Info** tab to go to the overall stack status page and wait until the stack is fully launched and shows a status of *CREATE_COMPLETE*. Click the refresh icon periodically to see progress update.
+1. 構成を確認し、[ **スタックの作成** ]をクリックします
 
-	> Note: When you launch the stack, CloudFormation deploys a nested CloudFormation stack to launch the Cloud9 resources. You can safely ignore that template which is prefixed with "aws-cloud9-Secure-Serverless-".
+1. CloudFormationスタックの作成が完了するのを待っている間に、ラップトップに**PostMan**がインストールされているか確認してください。そうでない場合は、[https](https://www.getpostman.com/):[//www.getpostman.com](https://www.getpostman.com/)からダウンロードしてインストールします。後で使用します。 
 
-1. Once the CloudFormation creation completes, go to the **Outputs** tab and copy the **AuroraEndpoint** to a text editor. You will need it to connect to the Aurora database in the next step. (**Keeping this browser tab open throughout this workshop is also highly recommended**)
+1. スタックの作成には数分かかります。画面左上の[ **スタック** ]を選択して、スタック一覧ページに移動し、スタックが*CREATE_COMPLETEの*ステータスが表示されるまで待ちます。更新アイコンを定期的にクリックして、進捗状況を確認してください。 
+	
+	>  注：CloudFormationはネストされたスタックをデプロイして、Cloud9リソースを起動します。「aws-cloud9-Secure-Serverless-」というプレフィックスが付いたテンプレートは無視しても問題ありません。 
+1. CloudFormationの作成が完了したら、[ **Secure-Serverless** ]スタックの[ **出力** ]タブに移動し、**AuroraEndpoint**をテキストエディターにコピーします。次のステップでAuroraデータベースに接続するために必要になります。（**このワークショップの作業中、このタブを開いたままにすることもお勧めです**）
 
 	![cloudformation output](images/0a-cloudformation-output-with-aurora-endpoint.png)
 
-</details>
+今実行したCloudFormationスタックは、以下のリソースも作成しています。 
 
+* 4つのサブネットを持つ**VPC**　（プライベートサブネット２つ、パブリックサブネット２つで構成）
+* **Cloud9** ワークショップで作業を行う環境
+* **MySQL Aurora RDSデータベース**（プライマリDBインスタンスが2つのプライベートサブネットのいずれかに存在）
 
-## Module-0B: Access Cloud9
+![initial resources diagram](images/0C-diagram-with-aurora.png)
 
-As part of the above step, an [Cloud9 IDE instance](https://aws.amazon.com/cloud9/) is created. All of the coding and commands in this workshop should be run inside the Cloud9 IDE environment. 
- 
-1. Open a new browser tab and go to the Cloud9 console: `https://console.aws.amazon.com/cloud9/home` (You can also find the Cloud9 console in the AWS console by clicking on **Services** in the navigation bar on the top, and search for `cloud9` and enter)
+ さらに、以下のリソースも作成しています。
 
-1. Click on ***Your environments*** (you may need to expand the left sidebar) 
+* **S3バケット**: Lambda関数コードのパッケージ化とアップロードのために後で使用
+* **セキュリティグループ**: Lambda関数によって使用
 
+## モジュール-0B：データベースを準備する
+
+いくつかのテーブルを作成し、Auroraデータベースに初期値を挿入する必要があります。セキュリティのベストプラクティスに従って、プライベートサブネットでAuroraデータベースを開始したため、データベースはインターネットから直接接続できません。 
+
+Cloud9インスタンスとAuroraデータベースは同じVPCにあるため、Cloud9インスタンスからデータベースを管理できます（データベースのセキュリティグループは、接続を許可するように構成されています）。 
+
+まず、**Cloud9**環境に移動します。 
+
+1. [Cloud9コンソール](https://console.aws.amazon.com/cloud9/home)移動します（AWSコンソール上部のナビゲーションバーで[ **サービス** ]をクリックして、`cloud9`と検索して移動することもできます） 
+
+1.  ***Your environments***をクリックします（左側のサイドバーを展開する必要がある場合があります） 
 	<img src="images/0B-cloud9-environments.png" width="80%" />
 
-1. Under the *Secure-Serverless-Cloud9* environment, click on ***Open IDE***
+	
+	
+1. *Secure-Serverless-Cloud9*環境の***Open IDE*** をクリックします
 	
 	![Cloud9 Open IDE](images/0C-open-ide.png)
 
-	If you have trouble opening cloud9, ensure you are using:
+	cloud9を開けない場合は、以下を使用していることを確認してください。 
 	
-	* Either  **Chrome** or **Firefox** browser 
-	* Refer to the troubleshooting guide [**here**](https://docs.aws.amazon.com/cloud9/latest/user-guide/troubleshooting.html#troubleshooting-env-loading) to ensure third-party cookies is enabled 
+	* **Chrome**または**Firefox**のブラウザ
+	* サードパーティのCookieが有効になっていることを確認　[**シューティングガイド**](https://docs.aws.amazon.com/cloud9/latest/user-guide/troubleshooting.html#troubleshooting-env-loading)
 
-1. You should now see an integrated development environment (IDE) environment as shown below. AWS Cloud9 is a cloud-based IDE that lets you write, run, and debug your code with just a browser. You can run shell commands in the terminal section just like you would on your local computers
-
+1. 次のように、統合開発環境（IDE）環境が表示されます。AWS Cloud9は、ブラウザのみでコードを記述、実行、デバッグできるクラウドベースのIDEです。ローカルコンピューターで行うのと同じように、ターミナルウィンドウでシェルコマンドを実行できます。 
 	![](images/0B-cloud9-start.png)
 
-	Keep your AWS Cloud9 IDE opened in a tab throughout this workshop as you'll be using it for most all activities.
+	多くの作業で使用するため、このワークショップを通してAWS Cloud9 IDEをタブで開いたままにしてください。 
 
-1. We need to get the content of this workshop in this environment. In the Cloud9 terminal window, run the following command to clone this repository (bottom of the page):
+1. このワークショップのコンテンツを取得します。Cloud9ターミナルウィンドウ（画面下部）で、次のコマンドを実行して、このリポジトリのクローンを作成します。 
 
 	`git clone https://github.com/aws-samples/aws-serverless-security-workshop.git`
 
-    ![](images/0B-clone-repo.png)
 
-:bulb:**Tip:**  Keep an open scratch pad in Cloud9 for notes on resource IDs, etc. that you will need for future steps: 
 
-1.  Create a new file in Cloud9  
 
-    ![](images/0B-create-scratch.png)
 
-1.  Copy/paste the resource IDs from the browser tab with the CloudFormation console open, copy the content under **Outputs**, and save it as `scratch.txt`
+次にデータベースを準備します。 
 
-    ![](images/0B-copy-past-scratch.png)
-    
+1.  リポジトリのフォルダーに移動します 。
+	```
+	cd aws-serverless-security-workshop/
+	```
 
-## Module-0C: Prepare your database
+1. 次のコマンドを使用してクラスターに接続します。エンドポイントを前にコピーしたものに置き換えます。（この情報はまだ残しておいてください。後で必要になります） 
 
-We need to create some tables and insert some initial values to the Aurora database. In Module-0A, a Aurora database is setup in private subnet so the database is not reachable directly from the Internet. 
+   `mysql -h <YOUR-AURORA-SERVERLESS-ENDPOINT> -u admin -p`
 
-Because your Cloud9 instance and the Aurora database is in the same VPC, you can administer the database from the Cloud9 instance (The security group of the database the have been configured to allow the traffic):
+     パスワードを求められるので*`Corp123!`*（前に指定したもの）を入力します
 
-To initialize your database:
+1. mysqlコマンドプロンプト（`mysql> `）内で、次のコマンドを入力します。 
 
-1. In the cloud9 terminal window, go into the folder of the repo:
+     `source src/init/db/queries.sql`
 
- 	```
- 	cd aws-serverless-security-workshop/
- 	```
-
-    ![](images/0C-cloud9-cd.png)
-
-1. Connect to your cluster with the following command. Replace the Aurora endpoint with the one you copied into your scratch pad.
-
-	`mysql -h <YOUR-AURORA-SERVERLESS-ENDPOINT> -u admin -p`
-
-	You should be prompted with a password. Use *`Corp123!`* (If during Module-0A, you customized the password to something else, use the one you specified).
-
-1. Within the mysql command prompt (`mysql> `), enter the following command: 
-
-	`source src/init/db/queries.sql`
-	
-	You should see an output such as this:
+     次のような出力が表示されるはずです。	 
 	
 	``` bash
 	mysql> source src/init/db/queries.sql
@@ -205,31 +151,30 @@ To initialize your database:
 	Query OK, 0 rows affected (0.02 sec)
 	
 	Query OK, 0 rows affected (0.03 sec)
-	
 	Query OK, 1 row affected, 1 warning (0.00 sec)
-	
+
 	Query OK, 2 rows affected (0.01 sec)
 	Records: 2  Duplicates: 0  Warnings: 0
-	
+
 	Query OK, 8 rows affected (0.01 sec)
 	Records: 8  Duplicates: 0  Warnings: 0
-	
+
 	Query OK, 7 rows affected (0.00 sec)
 	Records: 7  Duplicates: 0  Warnings: 0
-	
+
 	Query OK, 4 rows affected (0.00 sec)
 	Records: 4  Duplicates: 0  Warnings: 0
-		
+	
 	mysql> 
 	```
 
-1. You can explore the database tables created by running the following SQL query:
-	
+1. 次のSQLクエリを実行して、作成されたデータベースのテーブルを調べることができます。 
+
 	```sql 
 	SHOW tables;
 	```
 
-	You should see something like this
+	このようなものが表示されるはずです 。
 
 	```sql 
 	mysql> SHOW tables;
@@ -246,15 +191,15 @@ To initialize your database:
 	6 rows in set (0.00 sec)
 	```
 
-	Explore the content of the tables using 
-	
-	```sql 
+	次のSQLクエリを実行して、テーブルの内容を調べます。
+
+	``` 
 	SELECT * FROM Capes;
 	```
 
-	You should see something like this
-	
-	```sql
+	このようなものが表示されるはずです 。
+
+	```
 	mysql> SELECT * FROM Capes;
 	+----+--------------------+-------+
 	| ID | NAME               | PRICE |
@@ -267,52 +212,39 @@ To initialize your database:
 	4 rows in set (0.00 sec)
 	```
 
-1. After that, you can use the command `exit` to drop the mysql connection.
+1. 確認が終わったら、`exit`コマンドを使用してmysql接続を切断します。
 
-## Module-0D: The starting code for the serverless application
+    
 
-The code for the lambda functions resides within the path `aws-serverless-security-workshop/src/app`. The first thing you need to do is install node dependencies by navigating to this folder and using the following command: 
+## モジュール0C：サーバーレスアプリケーションのコードを確認
+
+Lambda関数のコードは`src/app`にあります。最初に行う必要があるのは、このフォルダーに移動し、次のコマンドを使用してノードの依存関係をインストールすることです。 
+
+`cd src/app && npm install`
 	
-```sh
-$ cd ~/environment/aws-serverless-security-workshop/src/app
-$ npm install
-```
-	
-> Note: If you see this warning
-> 
-> <img src="images/0D-vulnerability.png" width="65%"/>
-> 
-> Don't worry. We will be addressing the dependency vulnerability in [**module 7**](../07-dependency-vulnerability/README.md) :) 
-	
-The `src/app` folder has a few files: 
-	
-- **unicornParts.js**: Main file for the lambda function that lists unicorn customization options.  
-- **customizeUnicorn.js**: Main file for the lambda function that handles the create/describe/delete operations for a unicorn customization configuration.
-- **dbUtils.js**: This file contains all the database/query logic of the application. It also contains all the connection requirements in plain text (that's suspicious!)
+この`src/app`フォルダーにはいくつかのファイルがあります:	
 
+- **unicornParts.js**: ユニコーンカスタマイズオプションを一覧表示するLambda関数のメインファイル
+- **customizeUnicorn.js**:  ユニコーンカスタマイズ構成の作成/記述/削除を処理するLambda関数のメインファイル
+- **dbUtils.js**:  このファイルには、アプリケーションのすべてのデータベース/クエリロジックが含まれています。また、すべての接続情報がプレーンテキストで含まれています（疑わしい！） 
 
-Review them by navigating the file explorer sidebar in Cloud9:
+さらに、フォルダーには下記のファイルもあります。いまの時点でこれらを厳密に確認する必要はありません。 
 
-![](images/0D-review-code.png)
+- **httpUtils.js**: アプリケーションからのhttp応答ロジックが含まれています 
+- **managePartners.js**: 新しいパートナー企業を登録するためのロジックを処理するLambda関数のメインファイル。これについてはモジュール1で詳しく説明します 
+- **package.json**: Nodejsプロジェクトマニフェストのファイル（コードの依存関係のリストを含む） 
 
+コードに加えて、Lambda関数とREST APIの構成は`template.yaml`、**AWS SAM**（Serverless Application Model）テンプレートとして記述されています。 
 
-In addition, these additional files reside in the folder. No need to review them closely at this point:
-
-- **httpUtils.js**: This file contains the http response logic from your application.
-- **managePartners.js**: Main file for the lambda function that handles the logic to register a new partner company. We will go into details on this one in Module 1. 
-- **package.json**: Nodejs project manifest, including listing dependencies of the code 
-
-In addition to the lambda code, the configurations for Lambda function and the REST APIs are spelled out in `template.yaml` as a **AWS SAM** (Serverless Application Model) template. 
-
-[AWS SAM](https://github.com/awslabs/serverless-application-model) allows you to define serverless applications in simple and clean syntax. In the `template.yaml`, you can see we have defined 3 lambda functions, and it maps to a set of REST APIs defined in a Swagger template: 
+[AWS SAM](https://github.com/awslabs/serverless-application-model)を利用すると、シンプルでクリーンな構文でサーバーレスアプリケーションを定義できます。`template.yaml`では3つのLambda関数が定義されており、Swaggerテンプレートで定義された一連のREST APIにマッピングされていることがわかります。 
 
 <table>
   <tr>
-    <th>Lambda Function</th>
+    <th>Lambda 関数</th>
     <th>Main handler code</th>
-    <th>API resource</th>
-    <th>HTTP Verb</th>
-    <th>Description</th>
+    <th>API リソース</th>
+    <th>HTTP メソッド</th>
+    <th>説明</th>
   </tr>
   <tr>
     <td rowspan="4">UnicornPartsFunction</td>
@@ -367,191 +299,185 @@ In addition to the lambda code, the configurations for Lambda function and the R
   </tr>
 </table>
 
-## Module-0E: Run your serverless application locally with SAM Local
+## Module-0D：SAM Localを使用してサーバーレスアプリケーションをローカルで実行
 
-1. After reviewing the code, under **src/app/dbUtils.js**, replace the *host* with the Aurora endpoint. Then save the file (⌘+s for Mac or Ctrl+s for Windows or File -> Save)
-   
-   <img src="images/0D-db-endpoint-in-code.png" width="70%" />
 
-   :bulb: when you have unsaved changes in a file, cloud9 will show a grey dot next to the file name:
-   
-   <img src="images/0E-unsaved.png" width="50%" />
-   
-   When you successfully save the changes, the dot will turn green and then disappear.
 
-   After doing this, it's time to test your API locally using SAM Local. 
+コードを確認した後、**src/app/dbUtils.js**の*host*情報をAuroraエンドポイントに置き換えます。そして、ファイルを保存します（Macの場合は⌘+ s、Windowsの場合はCtrl + s、またはファイル->保存） 
 
-1. On the **right panel**, click on **AWS Resources**. 
+<img src="images/0D-db-endpoint-in-code.png" width="70%" />
+
+その後、SAM Localを使用してローカルでAPIをテストします。 
+
+1. **右のパネル**にある**AWS Resource**をクリック
 
 	<img src="images/0D-aws-resource-bar.png" width="80%" />
 
-1. You should see a folder tree with the name *Local Functions (1)*. 
-1. Select **UnicornPartsFunction** under the `src` folder
-1. Once you have selected the function, click on the dropdown on the panel on the top, and select **Run APIGateway Local**  
+1. **Local Functions (1)**という名前のフォルダーツリーが表示されます
+
+1. `src`フォルダーの下にある**UnicornPartsFunction**を選択します 
+
+1. 上部パネルのドロップダウンをクリックし、**Run APIGateway Local**を選択します 
 
 	<img src="images/0D-run-apigateway-local.png" width="40%" />
 
-1. Then, click on the play icon. You will get a new panel to test the API locally. 
+1. 次に、再生アイコンをクリックします。APIをローカルでテストするための新しいパネルが表示されます
 
-1. In the **Path** parameter of this new panel, you should see it filled as `/socks`. If not, pick any of the unicorn parts (e.g `/socks`, `/glasses`, `/capes`, `/horns`) and click **Run**.
+1. 表示されたパネルの**Path**パラメータに、`/socks`と表示されているはずです。（表示のない場合は、ユニコーンの部品（例えば`/socks`、`/glasses`、`/capes`、`/horns`など）を選択してしてください。）そして**Run**をクリックします
 
-	> The first time you test the API locally, it could take up to 1-2 minutes to fully initialize due to Docker being setup with a Docker image being pulled down. 
+	> APIを初めてローカルでテストする場合、Dockerがプルダウンされている状態でセットアップされているため、初期化するのに最大1〜2分かかります。 
 
+	レスポンスとして `200 OK`を取得できるはずです
 	
-	You should be able to get a `200 OK` response with values back for the body part you queried. 
 	
-	Example screenshot:
+	スクリーンショットの例:
 	
 	![Local Queries](images/0E-sam-local-result.png)
 	
 
-	This indicates that the application run successfully within your Cloud9 environment (locally). Now it's time to deploy your Serverless application!
+これは、アプリケーションがCloud9環境内（ローカル）で正常に実行できたことを示しています。これで、サーバーレスアプリケーションをデプロイできます！
 
-## Module-0F: Deploy and test your Serverless application in the cloud
+## Module-0E：サーバーレスアプリケーションをクラウドにデプロイしてテストする
 
-1. Retrieve the name of the S3 bucket the CloudFormation stack has created earlier:
+1. CloudFormationスタックが作成したS3バケットの名前を確認します。
 
-	* If you copied the CloudFormation output content in the cloud9 scratch pad, find the value of **DeploymentS3Bucket**
+	* CloudFormationコンソールを開いたままの場合は、そのタブに移動します。それ以外の場合は、ブラウザの別のタブを開き、CloudFormationコンソール[https://console.aws.amazon.com/cloudformation/home](https://console.aws.amazon.com/cloudformation/home)に移動し、`Secure-Serverless`スタックを選択します。
+	* **出力** タブの**DeploymentS3Bucket**の値をメモしてください
+
+	![CloudFormation output](images/0D-cloudformation-output-w-bucket-highlight.png)
 	
-	  ![CloudFormation output](images/0F-copy-bucket.png)
+2. ターミナルで、bash変数を設定します (REGION変数とBUCKET変数を設定)
 	
-	* Otherwise, find the value of **DeploymentS3Bucket** from the Cloudformation console **Output** tab 
-
-	  ![CloudFormation output](images/0D-cloudformation-output-w-bucket-highlight.png)
-
-1. In the terminal, set the bash variables:
-
 	```
-	REGION=`ec2-metadata -z | awk '{print $2}' | sed 's/[a-z]$//'`
-	BUCKET=<use the DeploymentS3Bucket from the CloudFormation output>
+	REGION=<選択したリージョンコードを入力>
+	BUCKET=<DeploymentS3Bucketの値を入力>
 	```
 	
-1. Ensure you are in the `src` folder:
+	※ リージョンコード：EU(アイルランド)  eu-west-1, US West (オレゴン) us-west-2 ,  US East (バージニア北部)  us-east-1 
+	
+3. `src`フォルダー内にいることを確認します
 
 	```
-	cd	~/environment/aws-serverless-security-workshop/src
+	cd ~/environment/aws-serverless-security-workshop/src
 	```
 
-1. Run the following to package up the lambda code and upload it to S3, and update the CloudFormation template to reference the S3 paths that hosts the code:
-
+4. 以下を実行してLambdaコードをパッケージ化し、S3にアップロードし、コードをホストするS3パスを参照するようにCloudFormationテンプレートを更新します
 	```
 	aws cloudformation package --template-file template.yaml --s3-bucket $BUCKET --output-template packaged.yaml
 	```
 
-1. Deploy the serverless API using the following command. Note that this template references the output from the setup CloudFormation stack (`Secure-Serverless`) for things like subnet IDs. 
-
+5. 次のコマンドを使用してサーバーレスAPIをデプロイします。このテンプレートは、CloudFormationスタック（`Secure-Serverless`）からサブネットIDなどの出力を参照していることに注意してください
 	```
 	aws cloudformation deploy --template-file packaged.yaml --stack-name CustomizeUnicorns --region $REGION --capabilities CAPABILITY_IAM --parameter-overrides InitResourceStack=Secure-Serverless
 	```
 
-1. Wait until you see the stack is successfully deployed:
-
+6. スタックが正常にデプロイされるまで待ちます
 	```
 	Waiting for changeset to be created..
 	Waiting for stack create/update to complete
 	Successfully created/updated stack - CustomizeUnicorns
 	```
 
-1. You can gather the base endpoint of the serverless API we just deployed from the output of the CloudFormation stack. 
+7. CloudFormationスタックの出力から、デプロイしたサーバーレスAPIのベースエンドポイントを確認できます
+   
 
-	To do it from commandline:
+コマンドラインからは下記を入力すると、出力で確認できます。
 
-	```
-	aws cloudformation describe-stacks --region $REGION --stack-name CustomizeUnicorns --query "Stacks[0].Outputs[0].OutputValue" --output text
-	```
-
-	e.g.
-```
-$ aws cloudformation describe-stacks --region $REGION --stack-name CustomizeUnicorns --query "Stacks[0].Outputs[0].OutputValue" --output text
-https://rs86gmk5bf.execute-api.us-west-2.amazonaws.com/dev/
-```
-	
-	Alternatively, you can go to the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/home), find the `CustomizeUnicorns` stack and look in the **Output** tab
-
-1. You can test in your browser (or `curl`) for the following APIs. Remember to append the API path (e.g. `/socks`) to the endpoint
-
-	<table>
-	  <tr>
-	    <th>API</th>
-	    <th>HTTP Verb</th> 
-	    <th>path</th> 
-	  </tr>
-	  <tr>
-	    <td>List customization options and prices for horns</td>
-	    <td>GET</td> 
-	    <td>/horns</td>
-	  </tr>
-	  <tr>
-	    <td> List customization options and prices for glasses </td>
-	    <td>GET </td> 
-	    <td>/glasses</td>
-	  </tr>
-	  <tr>
-	    <td> List customization options and prices for capes </td>
-	    <td>GET</td> 
-	    <td>/capes </td>
-	  </tr>
-	  <tr>
-	    <td>List customization options and prices for socks </td>
-	    <td> GET </td> 
-	    <td>/socks </td>
-	  </tr>
-	</table>
-	
-	For example:
-	
-	![test api in browser](images/0E-test-browser.png)
-
-	
-## Module-0G: Set up Postman to test the API 
+   ```
+   aws cloudformation describe-stacks --region $REGION --stack-name CustomizeUnicorns --query "Stacks[0].Outputs[0].OutputValue"
+   ```
 
 
-We will use [**Postman**](https://www.getpostman.com/) for the rest of the workshop for testing API requests. 
+![get endpoint secreenshot](images/0E-get-endpoint-output.png)
 
-1. If you don't have installed yet on your laptop, please download it at: [https://www.getpostman.com/](https://www.getpostman.com/)
-1. To save you time, we created a Postman collection that you can use to test each of the APIs we are working with today. 
 
-	* click on the **Import** button in postman
-	* Then use **Import from Link** and supply the below link:
+
+   または、 [CloudFormation コンソール](https://console.aws.amazon.com/cloudformation/home)に移動して、`CustomizeUnicorns`スタックの[ **出力** ]タブでも確認することができます 
+
+
+
+8. ブラウザ（または`curl`）で次のAPI をテストします。先ほど確認したAPIベースエンドポイントにAPIパス（例`/socks`）を追加することを忘れないでください 
+
+   <table>
+     <tr>
+       <th>API</th>
+       <th>HTTP Verb</th> 
+       <th>path</th> 
+     </tr>
+     <tr>
+       <td>List customization options and prices for horns</td>
+       <td>GET</td> 
+       <td>/horns</td>
+     </tr>
+     <tr>
+       <td> List customization options and prices for glasses </td>
+       <td>GET </td> 
+       <td>/glasses</td>
+     </tr>
+     <tr>
+       <td> List customization options and prices for capes </td>
+       <td>GET</td> 
+       <td>/capes </td>
+     </tr>
+     <tr>
+       <td>List customization options and prices for socks </td>
+       <td> GET </td> 
+       <td>/socks </td>
+     </tr>
+   </table>
+
+   出力例：
+
+   ![test api in browser](images/0E-test-browser.png)
+
+
+
+## モジュール-0F：PostmanをセットアップしてAPIをテストする
+
+最後に、[**Postman**](https://www.getpostman.com/)を使用してAPIリクエストをテストします。
+
+1. ラップトップにPostmanをインストールしていない場合は、[https://www.getpostman.com/](https://www.getpostman.com/)からダウンロードしてインストールしてください 
+
+1. 各APIをテストできるPostmanコレクションを用意したので、時間節約のために利用します 
+
+	* postmanの[ **Import** ]ボタンをクリックします 
+	* 次に、 **Import from Link** から以下のリンクを指定します:
 
 		`https://raw.githubusercontent.com/aws-samples/aws-serverless-security-workshop/master/src/test-events/Customize_Unicorns.postman_collection.json`
-	* Click on **Import**
+	* **Import**をクリックします
 	
 		<img src="images/0F-import-postman.png" width="50%" />
 	
-1. You should now see a collection called `Customize_Unicorns` imported in postman on the left hand side
-
+1. 画面左側に、`Customize_Unicorns` というコレクションが表示されます。
 	<img src="images/0F-postman-after-import.png" width="60%" />
 
+1. postmanの環境を作成し、`base_url`変数を設定します。
 
-1. We need to set the `base_url` variable by creating a environment in postman.
-	1. Click the &#9881; icon (“Manage Environments”) in the upper right corner of the Postman app.
-
-	   <img src="images/0F-postman-manage-env.png" width="90%" />
-
+	1. 画面右上の &#9881; アイコンから (“Manage Environments”) をクリックします
+	<img src="images/0F-postman-manage-env.png" width="90%" />
+		
+	2. **Add** ボタンをクリックして新しい環境を作成します。
+	3. 環境名`dev`を入力します
 	
-	1. Create a new environment by clicking the **Add** button.
-	1. Enter an environment name, e.g. `dev`
-	1. Add an variable `base_url` and use the base API endpoint we deployed earlier.	
-
-	   &#9888; **Ensure to leave out the trailing `/`!**  &#9888;
-
-	   See example screenshot below 
-
-	   <img src="images/0F-postman-environment.png" width="70%" />
+	4. `base_url`変数を追加し、 先程作成したAPIベースエンドポイントを値として入力します。
 	
-	> See documentation from Postman on [managing environments](https://www.getpostman.com/docs/v6/postman/environments_and_globals/manage_environments) if you want to learn more.
-1. Click **Add** to create the `dev` environment and exit out the Manage Environments by clicking the **X**
-1. Select `dev` on the environment drop down menu. 
+	​		スクリーンショットの例
+	
+	​	   <img src="images/0F-postman-environment.png" width="70%" />
+	
+	> Postmanの環境と変数の詳細は[managing environments](https://www.getpostman.com/docs/v6/postman/environments_and_globals/manage_environments) で確認できます
+	
+1. **Add**をクリックして`dev`環境を作成したのち 、**X**をクリックしてManage Environments を終了します。
+
+1. 画面右上のドロップダウンメニューから`dev` を選択します。
 
 	<img src="images/0F-select-dev-env.png" width="90%" />
 
-
-1. Now, you are ready to test the API using postman. In the left sidebar, click on the `Customize_Unicorns` collection, expand the `List customization options` folder. Select an API in the folder and test sending an request by clicking on the **Send** button
+1. Postmanを使ってAPIをテストする用意ができました。画面左のサイドバーから`Customize_Unicorns` コレクションをクリックし、`List customization options` フォルダを開きます。 フォルダの中のAPIを1つ選択し、**Send** ボタンをクリックしてリクエストを送信し、結果を確認します。
 
 	![Postman Get request](images/0F-postman-test-get.png)
 
 
-## Next step
-To start securing the serverless application you just deployed, return to the workshop [landing page](../../README.md) to pick a module to work on! 
+## 次のステップ
+デプロイしたサーバーレスアプリケーションの保護を開始します。ワークショップの [トップページ](../../README.md) に戻り、作業するモジュールを選択してください！
 
