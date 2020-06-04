@@ -1,44 +1,45 @@
-# Module 1: Add Authentication and Authorization
+# モジュール 1: 認証と認可の追加
 
-As you have probably noticed, the serverless app we just deployed is now open to anyone in the world to access. Attackers can submit any number of unicorn customizations and we have no way of knowing who really made the request. 
+さきほど展開したサーバーレスアプリは、世界中の誰でもアクセスできるようになっています。攻撃者はユニコーンのカスタマイズ要求を何回でも送信でき、誰がリクエストを行ったかを知る方法はありません。
 
-To lock down access to the API to only trusted partners, we must add authentication and authorization to the API. 
+API へのアクセスを信頼できるパートナー企業のみに制限するには、認証と認可の機能を追加する必要があります。  
 
-Given that our use case is for 3rd party companies to programmatically access the API, there are a few options we can take to implement auth: 
+今回のシナリオでは、パートナー企業はプログラムで API にアクセスするので、認証を実装するためのいくつかの選択肢が考えられます。
 
-* Use **API Keys** - this is the simplest option, but it doesn't provide lots of flexibility. For example, it requires us to build our own authorization system if fine-grained access control is needed (e.g. different clients may require different access to different APIs). 
-* Use **OAuth** [**Client Credentials Flow**](https://tools.ietf.org/html/rfc6749#section-4.4) This is a well-defined standard where the client authenticates with an authorization server (in our example, Amazon Cognito) using client credentials, get a access token, then calls the API Gateway with the access token. 
+* **API Key** - 最も簡単なオプションですが、柔軟性はあまりありません。たとえば、きめ細かなアクセス制御が必要な場合は、独自の認証システムを構築する必要があります（たとえば、異なるクライアントが異なる API へのアクセスを必要とするケースなど）
+* **OAuth** [**クライアント認証情報フロー**](https://tools.ietf.org/html/rfc6749#section-4.4) - クライアントが認証情報を使用して認証サーバー（この例では Amazon Cognito）で認証し、アクセストークンを取得し、API を呼び出す標準的な方法です。
 
 	<img src="images/10-oauth-flow.png" alt="oauth flow" width="60%">
 	
-We chose to use the Oauth Client Credentials option for the workshop today, because compared to using API keys, using the client credentials flow allow us to:
 
-* Easily define different authorization [**scopes**](https://www.oauth.com/oauth2-servers/scope/) so different kinds of clients may have access to different APIs and resources
-* In the future, we may have use cases where the API will be accessed through a web UI managed by Wild Rydes instead of programmatic access. Or we may want to allow 3rd party companies to build custom apps that makes requests on behalf of riders/unicorns (see [example walkthrough](https://github.com/aws-samples/aws-serverless-workshops/tree/master/WebApplication/5_OAuth) for that use case). Designing our APIs to authenticate with Oauth access tokens give us flexibility to support these options down the line.  
+このワークショップでは、OAuth クライアント認証を利用します。API Key を使用する場合と比較して、OAuth クライアント認証情報フローを使用すると、次のことが可能になります。
 
-In this module, you will use **Amazon Cognito** to act as the **Authorization server**, and leverage [**Lambda authorizer**](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html) for API Gateway to inspect the token and determine the access policies based on the token. By the end of the module, your architecture will look like this: 
+* 異なる認証 [**スコープ**](https://www.oauth.com/oauth2-servers/scope/) を簡単に定義でき、異なる種類のクライアントが異なるAPIやリソースにアクセスさせやすい。
+* 将来の拡張として、プログラムによるアクセスではなく、Wild Rydes が管理する Web UI を介して API に接続するケースがあるかもしれません。または、サードパーティーの企業が乗客/ユニコーンに代わってリクエストを行うカスタムアプリを構築できるようにしたいケースもあります ( [別ワークショップの例](https://github.com/aws-samples/aws-serverless-workshops/tree/master/WebApplication/5_OAuth) ). OAuth アクセストークンで認証する API を設計することで、これらの将来的な拡張を柔軟に対応できます。  
+
+このモジュールでは、**Amazon Cognito** を **認証サーバー**として使用し、API Gateway 用の [**Lambda オーソライザー**](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html) を活用することで、トークンを検査しアクセスポリシーを割り当てます。このモジュールを実施した後のアーキテクチャは次のようになります。   
 
 ![high level architecture](images/10-high-level-architecture-w-auth.png)
 
-> Once you decide to do this module, you won't be able to use Cloud9 Local testing as we haven't configured the correct permissions to test locally this functionality.
+> 注意：このモジュールを実行すると、モジュール0D で行った Cloud9 でのローカルテストができなくなります（ローカルでテストするためアクセス権限がなくなるため）
 
-## Module 1 instructions
+## **モジュール 1 の手順**
 
-Quick links to submodules:
+このモジュールは、サブモジュールA~Fで構成されています。
 
-* [**Module 1A**](#1A): Configure Cognito User Pool with a hosted domain
-* [**Module 1B**](#1B): Create the authorization scopes in the Cognito User Pool
-* [**Module 1C**](#1C): Create client credentials for internal admin account 
-* [**Module 1D**](#1D): Deploy Custom Authorizer lambda
-* [**Module 1E**](#1E): Use the admin client to register new partner companies
-* [**Module 1F**](#1F): Use the partner company client credentials to customize unicorns
+* [**モジュール 1A**](#1A) : Cognito ユーザープールとドメインの作成
+* [**モジュール 1B**](#1B) : Cognito ユーザープールで認証スコープの作成
+* [**モジュール 1C**](#1C) : 内部管理用アカウントのクライアント認証情報の作成
+* [**モジュール 1D**](#1D) : Lambda カスタムオーソライザーの設定
+* [**モジュール 1E**](#1E) : 管理クライアントを使用した新しいパートナー企業の登録  
+* [**モジュール 1F**](#1F) : パートナー企業のクライアント認証情報を使用したユニコーンのカスタマイズ
 
 
-### <a name="1A"></a>Module 1A: Create a Cognito User Pool and hosted domain
+### <a name="1A"></a>モジュール 1A: Cognito ユーザープールとドメインの作成
 
-**[Amazon Cognito](https://aws.amazon.com/cognito)** provides a managed service for simplifying identity management for your apps. To enable our clients to authenticate against Cognito, we need to configure a Cognito user pool and an associated domain name. 
+**[Amazon Cognito](https://aws.amazon.com/cognito)** はアプリケーションのID管理を簡素化するためのマネージドサービスです。 クライアントがCognito で認証できるようにするには、Cognito ユーザープールとドメイン名を設定する必要があります。 
 
-1. As a preparation for this module, we have already provisioned a Cognito User Pool. Review it under the **Resources** section of `src/template.yaml`:
+1. 前回のモジュールで、既に Cognito ユーザープールがプロビジョニングされています。`src/template.yaml`の**Resources** セクションで、下記の記述を確認してください。
 
 	```
 	  CognitoUserPool:
@@ -47,97 +48,94 @@ Quick links to submodules:
 	      UserPoolName: !Sub '${AWS::StackName}-users'
 	```
 
-1. To configure the Cognito User Pool with a domain, go to the [Cognito management console](https://console.aws.amazon.com/cognito/home), and click on **Manage User Pools**
+1. ドメインで Cognito ユーザープールを構成するために、[Cognito マネジメントコンソール](https://console.aws.amazon.com/cognito/home) に移動し,  **ユーザープールの管理** をクリックします。
 
-1. Click on the user pool created by the SAM Template (`src/template.yaml`). It should be named "**CustomizeUnicorns-users**"
+1. SAM テンプレート (`src/template.yaml`). によって作成されたユーザープールをクリックします。"**CustomizeUnicorns-users**" という名前になっているはずです。
 
-1. Under **App Integration**, go to the **Domain Name** tab to set up an unique Cognito domain our API consumers will use for authentication requests.
+1. **アプリの統合** の **ドメイン名**  タブに移動して、API の利用者が認証リクエストに使用するための一意の Cognito ドメインを設定します。 ( **ユニークなドメイン名を設定してください** 。例： `custom-unicorn-johndoe`)
 
-	**You must pick a unique custom domain name**! For example `custom-unicorn-johndoe`
-	
-1. Make sure that the domain name is available and then click **Save changes**
+1. ドメイン名が利用できるか **使用可能かチェック** で確認し、**変更の保存** をクリックします。
 
 	![cognito domain](images/1A-cognito-domain.png)
 
-1. Note down the domain name (In the format of `https://<your-custom-name>.auth.<aws-region>.amazoncognito.com`), you will need this later. 
+1. 後で利用するので、設定したドメイン名をメモしておきます。(このようなフォーマットになります `https://<your-custom-name>.auth.<aws-region>.amazoncognito.com`)
 
-	**Tip 1**: You can copy the full domain name by going to the **App Integration** tab. 
+	**Tip 1**: **アプリの統合** タブに移動すると、完全なドメイン名をコピーできます。
 	
-	**Tip 2**: You can copy the full domain name into a text editor on your laptop or create a new file in the cloud9 IDE environment to use as scratch pad for storing such values. 
+	**Tip 2**: 完全なドメイン名をテキストエディタにコピーするか、cloud9 IDE 環境で新しいファイルを作成してメモ帳として使用することもできます。
 
 
 
-### <a name="1B"></a>Module 1B: Create the authorization scopes in the Cognito User Pool
+### <a name="1B"></a>モジュール 1B: Cognito ユーザープールの認証スコープの作成
 
-Amazon Cognito User Pools lets you declare custom resource servers. Custom resource servers have a unique identifier - normally the server uri - and can declare custom <a href="https://www.oauth.com/oauth2-servers/scope/" target="blank"> **scopes** </a>. Scopes allow you to limit the access of an app to a smaller subset of all the available APIs and resources. 
+Amazon Cognito ユーザープールでは、カスタムリソースサーバーを宣言できます。カスタムリソースサーバーには一意の識別子（通常はサーバーURI）があり、カスタム [**スコープ** ](https://www.oauth.com/oauth2-servers/scope/)を宣言できます。スコープを使用すると、アプリへのアクセスを、使用可能なすべての API とリソースのより小さなサブセットに制限できます。
 
-For this app, we will start with defining 2 scopes:
+まず、2つのスコープを定義することから始めます。
 
-* **CustomizeUnicorn** - used by 3rd party partners that allows listing unicorn outfit customization options and create/describe/delete unicorn customizations. 
-* **ManagePartners** - used by internal apps/admin to register partner companies
+* **CustomizeUnicorn** - パートナー企業によって利用されます。ユニコーンの衣装のカスタマイズオプションをリストしたり、作成、詳細表示、削除を行うことができます。
+* **ManagePartners** - 社内の管理者やアプリが、パートナー企業を登録するために使用します。
 
-To achieve this: 
+次の手順で、これらを設定します:
 
-1. Go to the **Resource Servers** tab under **App integration**
+1. **アプリの統合** にある **リソースサーバー** タブに移動します。
 
-1. In the resource servers screen, click **Add a resource server**.
+1. リソースサーバの画面で、**リソースサーバーの追加**をクリックします
 
-1. Specify `WildRydes` as the Name.
+1. 名前に `WildRydes` を入力します。
 
-1. Use `WildRydes` as the Identifier for the custom resource server.
+1. カスタムリソースサーバーの識別子として `WildRydes` を入力します。
 
-1. In the Scopes section, declare 2 new scopes:
-	* `CustomizeUnicorn` - used by 3rd party partners to customize unicorns
-	* `ManagePartners` - used by internal apps/admin to register partner companies
+1. スコープのセクションで、２つの新しいスコープを宣言します：
+	* `CustomizeUnicorn` - パートナー企業によって利用されます。
+	* `ManagePartners` - 社内の管理者やアプリが、パートナー企業を登録するために使用します。
 	
-	then click **Save changes** 
+	**変更の保存** をクリックします。
 	
 	![add custom scope](images/cognito-add-custom-scope.png)
 
-### <a name="1C"></a> Module 1C: Create client credentials for internal admin account
+### <a name="1C"></a> モジュール 1C: 内部管理用アカウントのクライアント認証情報の作成
 
-Each new company that signs up to customize unicorns will need to be provisioned a set of client credentials (client ID and client secret) they can use with their request. This means we would need a process to create and distribute these client credentials.  
+ユニコーンをカスタマイズするためにサインアップする新しい会社には、リクエストで使用できるクライアント認証情報（クライアント ID とクライアントシークレット）のセットを発行する必要があります。つまり、これらのクライアント認証情報を作成して配布するプロセスが必要になります。
 
-In real life, you would probably want to do this in a web developer portal. The partner companies sign in with some user name and password to the web portal, then they can request a set of client credentials to use to make programmatic requests with. However, due to limited time for the workshop, we will just simplify this by having a **POST /partner** API that you as the admin working for Wild Rydes can use to sign up partner companies. 
+実際には、この作業を Web 開発者ポータル行うことができます。パートナー企業は、何らかのユーザー名とパスワードを使用して Web ポータルにサインインし、クライアント認証情報を要求できるようにすることが可能です。ただし、このワークショップでは時間が限られているので、**POST /partner** API を作成して、Wild Rydes の管理者がパートナー企業のサインアップのために使用できるようします。
 
-So now, let's get you a set of admin credentials with the `WildRydes/ManagePartners` OAuth scope, so you can start signing up other companies! 
+それでは、`WildRydes/ManagePartners` の OAuth スコープを持つクライアント管理者用の認証情報を作成して、 パートナー企業のサインアップを開始しましょう！
 
 
-1. In the Cognito console, go to the **App Clients** tab under **General Settings**
+1. Cognito コンソール画面で、 **全般設定** の **アプリクライアント** タブを選択します。
 
-1. Click **Add an app client**
+1. **アプリクライアントの追加** をクリックします。
 
-1. Use `Admin` for app client name (For the **Auth Flows Configuration** section, you can either uncheck the ALLOW_CUSTOM_AUTH and ALLOW_USER_SRP_AUTH or leave it enabled)
+1. アプリクライアント名として `Admin` を入力します。 ( **Auth Flows Configuration** の項目は, ALLOW_CUSTOM_AUTH と ALLOW_USER_SRP_AUTH のチェックを外すか、そのまま有効でもかまいません) **要確認**
 
 	![add admin](images/cognito-add-admin.png)
 
-1. Click **Create app client**
+1. **アプリクライアントの作成** をクリックします。
 
-1. This generates a **App client id** and **App client secret** for the admin app client. Click on **Show Details** to see both values, copy them down for later use.
+1. クライアント管理者のための **アプリクライアントID** と **アプリクライアントのシークレット** が作成されます。**詳細** をクリックすると両方が確認できるので、この２つをコピーしておいてください（あとで利用します）
 
 	![admin client ID](images/1D-admin-clientID.png)
 
+1. **アプリの統合** の **アプリクライアントの設定** へ移動します。
 
-1. Go to **App client settings** tab under **App integration**
-
-1. For the Admin client we just created, enable the **Client credentials** Oauth Flow and select the Custom Scopes for **WildRydes/ManagePartners**, and click **Save changes**
+1. 先程作成した管理者のために、許可されている OAuth フローで **Client credentials** を選択し、許可されているカスタムスコープで**WildRydes/ManagePartners**を選択した後、 **変更の保存** をクリックします。
 
 	![add admin](images/1D-cognito-admin-oauth-scope.png)
 	
 
 
-### <a name="1D"></a> Module 1D: Deploy Custom Authorizer lambda
-We need to configure a [**Lambda authorizer**](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html) for API Gateway. As you can see in the below diagram, a lambda function is needed to inspect the access token in the request, and determine the identity and the corresponding access policy of the caller. 
+### <a name="1D"></a> モジュール 1D: Lambdaカスタムオーソライザーの設定
+API Gateway のための [**Lambda オーソライザー**](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html) を設定します。以下の図のように、リクエスト内のアクセストークンを検査し、呼び出し元の ID と対応するアクセスポリシーを決定するために、Lambda 関数が動作します。
 
 ![lambda authorizer](images/1C-custom-auth-workflow.png)
 
-1. Switch back to the browser tab with your Cloud9 IDE environment or reopen it from the [Cloud9 console](https://console.aws.amazon.com/cloud9/home)
+1. Cloud9 IDE 環境のブラウザのタグに戻るか、[Cloud9 コンソール](https://console.aws.amazon.com/cloud9/home)から再度開きます。
 
-1. In the serverless API we have deployed, the backend logic has an identifier for 3rd party companies (The primary key of the `Companies` MySQL table and a foreign key constraint for the `Custom_Unicorns` table.) When the lambda function inspects the access token, it can parse out the OAuth ClientID from it. To be able to tell the backend lambda which company is making the request, we need a lookup table that maps the ClientID to the company IDs in the backend database. In this case, we chose to use a separate DynamoDB table to store this mapping to separate the auth functionality from the backend system:
- 
+1. デプロイしたサーバーレス API には、バックエンドにサードパーティ企業の識別子( MySQL のテーブル`Companies` のプライマリキーと、`Custom_Unicorns` テーブルの外部キーの制約）があります。Lambda 関数がアクセストークンを検査すると、そこから OAuth のクライアント ID がわかります。どの会社がリクエストを行っているかをバックエンドの Lambda 関数に伝えるには、クライアント ID をバックエンドデータベースの会社 ID と付け合わせるルックアップテーブルが必要です。今回は下図のように、DynamoDB テーブルを使用してこのマッピングを管理し、認証機能をバックエンドシステムから分離することを選択しました:
+
 	![id mapping diagram](images/1C-id-mapping-diagram.png)
 
-1. As a preparation for this module, we have also already provisioned a DynamoDB table to store this mapping. Review it under the **Resources** section of `template.yaml`:
+1. このモジュールの準備として、このマッピングを管理するための DynamoDB テーブルもすでにプロビジョニングされています。`template.yaml`の **Resources** セクションで、下記の記述を確認してください。
 
 	```
 	  PartnerDDBTable:
@@ -150,23 +148,22 @@ We need to configure a [**Lambda authorizer**](https://docs.aws.amazon.com/apiga
 	
 	```
 
-1. Next, we need the code for lambda authorizer! Review the code in the `src/authorizer` folder. 
+1. 次に、Lambda オーソライザーのコードが必要です！ `src/authorizer` フォルダにあるコードを確認していきます。
 
-	Here's a high level summary of what the authorizer logic contains:
+	以下は、オーソライザーのコードについての説明です:
 	
-	* Download the public key from the Cognito user pool, if not already cached
-	* Decode the JWT token and validate the signature with the public key 
-	* Based on the claims parsed from the JWT token, generate a response policy that specifies API resources and actions the caller is permitted to access
+	* ユーザープールから公開鍵をダウンロード（もしキャッシュされていない場合）
+	* JWT トークンをデコードし、公開鍵で署名を検証
+	* JWT トークンから解析されたクレームに基づいて、アクセスを許可する API リソースとアクションが指定されたレスポンスポリシーを生成
 	
-
-1. Install nodejs dependencies in the `src/authorizer` folder:
+1. `src/authorizer` フォルダに nodejs の依存関係をインストールします。
 
 	```
 	cd ~/environment/aws-serverless-security-workshop/src/authorizer
 	npm install
 	```
 
-1. Add the authorizer lambda to the **Resources** section of `template.yaml`:
+1. `template.yaml`の **Resources** セクションに、このオーソライザーの Lambda 関数を追加します。
 
 	```
 	  CustomAuthorizerFunction:
@@ -187,8 +184,7 @@ We need to configure a [**Lambda authorizer**](https://docs.aws.amazon.com/apiga
 	          PARTNER_DDB_TABLE: !Ref PartnerDDBTable
 	```
 
-
-1. API gateway require an IAM role to invoke the custom authorizer. Add it to the SAM template as another **Resource** object: 
+1. API gateway からこのカスタムオーソライザーを呼び出すための IAM ロールが必要です。SAMテンプレート( `template.yaml` )の **Resources** セクションにさらに下記のリソースを追加します 
 
 	```
 	  ApiGatewayAuthorizerRole:
@@ -219,7 +215,7 @@ We need to configure a [**Lambda authorizer**](https://docs.aws.amazon.com/apiga
 	                  Fn::Sub: ${CustomAuthorizerFunction.Arn}
 	```
 
-1. Find the swagger definition of the API gateway in the SAM template 
+1. SAM テンプレート( `template.yaml` ) から swaggar の定義を検索し、下記の場所を見つけます。
 
 	```
 	  UnicornApi:
@@ -238,7 +234,7 @@ We need to configure a [**Lambda authorizer**](https://docs.aws.amazon.com/apiga
 			   ....
 	```
 
-1. Replace the `### TODO: add authorizer` section with
+1. `### TODO: add authorizer` 部分を、下記に置き換えます。
 
 	```
 	        securityDefinitions:
@@ -257,18 +253,18 @@ We need to configure a [**Lambda authorizer**](https://docs.aws.amazon.com/apiga
 
 	```
 	
-	**Caution:** Ensure the `securityDefinitions` section you pasted is at the same indentation level as `info` and `paths`
+	**注意:** 置き換えた `securityDefinitions` の部分は、`info` や `paths` と同じインデントにそろえてください。
 
-1. In the `paths` section of the Swagger template, uncomment the 
+1. `paths` セクションの **全ての** コメント部分(#)を削除し、コメントを外します。
 
 	```
 	#              security:
 	#                - CustomAuthorizer: []
 	```
 
-	lines for each API method. For example: 
+	コメントを外した後は、下記のように行頭のインデントをそろえてください。
 
-	Change 
+	変更前:
 	
 	```
 	          "/socks":
@@ -284,7 +280,7 @@ We need to configure a [**Lambda authorizer**](https://docs.aws.amazon.com/apiga
 				...
 	```
 	
-	Into:
+	変更後:
 	
 	```
 	        paths:
@@ -300,109 +296,110 @@ We need to configure a [**Lambda authorizer**](https://docs.aws.amazon.com/apiga
 	              responses: {}
 				...
 	```
-1. Save the `template.yaml` file
-1. Now we need to validate the template.
+1. `template.yaml` を保存します。
+1. 正しくテンプレートを編集できたかを評価します。
 
-	First, ensure we are back in the `src` folder in the terminal
+	まず、下記のコマンドで 'src' フォルダに戻ります。
 	
 	```
 	cd ..
 	
 	```
 	
-	Then run 
+	そして、下記を実行します。
 	
 
 	```
 	sam validate -t template.yaml
 	```
 	
-	If the SAM template has no errors, you should see 
+	もし、SAM テンプレート( `template.yaml` ) にエラーがなければ、下記が表示されます。
 	
 	```
 	2018-10-08 16:00:56 Starting new HTTPS connection (1): iam.amazonaws.com
 	<your directory>/src/template.yaml is a valid SAM Template
 	```
 	
-	otherwise, fix the syntax error before continuing to next step
+	エラーが表示された場合は、エラー内容にしたがってその箇所を修正してください。
 
-1.  Deploy the updates by running the same commands we used in module 0 to deploy the application:
+1.  モジュール 0 で実行した同じコマンドでアプリケーションをデプロイし、プログラムを更新します。
 
 	```
 	 aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $BUCKET --s3-prefix securityworkshop --region $REGION &&  aws cloudformation deploy --template-file packaged.yaml --stack-name CustomizeUnicorns --region $REGION --capabilities CAPABILITY_IAM --parameter-overrides InitResourceStack=Secure-Serverless
 	```
 
-1. After the SAM template has finished updating, go to the [API Gateway console](https://console.aws.amazon.com/apigateway) and click into the API we just updated. Under **Resources**, choose any method in the API, and you should see **Auth: CustomAuthorizer** under **Method Request**:
+1. 更新が終了したら、[API Gateway コンソール](https://console.aws.amazon.com/apigateway) に移動し、いま更新した API(CustomizeUnicorns) をクリックします。**リソース** の配下にある任意のメソッドを選択すると、**メソッドリクエスト** の下に **認可:CustomAuthorizer** と設定されているのが確認できます。
 
 	![verify API gateway authorizer](images/1C-verify-API-authorizer.png)
 
-1. Now go back to Postman and test sending API requests (any API in the collection). You should now get **401 Unauthorized** errors from the APIs now.
+1. Postman に戻り、（コレクション内の任意の API に対して）リクエストの送信テストします。ここでは、APIから **401 Unauthorized** エラーが発生するはずです。
 
-	> Make sure you didn't miss any APIs! 
+	> 時間があれば、全てのAPIで試してみてください。
 
 
-### <a name="1E"></a>Module 1E: Use the admin client to register new partner companies
+### <a name="1E"></a>モジュール 1E: 管理クライアントを使用して新しいパートナー企業の登録
 
-Now we have configured our API so only authenticated requests can get through to our protected resources. Our next step is getting some credentials to make authenticated requests with! 
+これで、認証されたリクエストのみが保護されたリソースに到達できるように API を設定しました。次のステップは、認証リクエストを行うための認証情報を取得することです！
 
-To make authenticated requests using the admin client credentials we just created in Module 1C, we can use PostMan:
+モジュール 1C で作成した管理クライアントの認証情報を使用して、PostMan で認証されたリクエストを行います
 
-1. In Postman, right click on the **Manage Partner** folder and click **edit**
-1. In the Edit Folder window that pops up, go to **Authorization** tab, and change the Auth **Type** to `OAuth 2.0`, then click **Get New Access Token** 
+1. Postman で、**Manage Partner** フォルダを右クリックして、 **edit** をクリックします。
+1. ポップアップ表示された Edit Folder ウィンドウで、**Authorization** タブから **TYPE** を `OAuth 2.0` に変更し、 **Get New Access Token** をクリックします。
 
 	![postman add auth](images/1E-postman-add-auth.png)
 
-1. Configure the token request:
+1. トークンリクエストを設定します:
 	
 	* **Name**: `admin`
 	
 	* **Grant Type**: `Client Credentials`
-	* **Access Token URL**: Remember the cognito domain we created in [module 1A](#1A)? use that and append `/oauth2/token` to the end
+	* **Access Token URL**: [モジュール 1A](#1A)で作成したCognitoドメインを覚えていますか？ `/oauth2/token` を後ろに追加して入力します。
 
-		> The full URL should look like `https://custom-unicorn-johndoe.auth.us-west-2.amazoncognito.com/oauth2/token`
+		> 設定値はこのようになります `https://custom-unicorn-johndoe.auth.us-west-2.amazoncognito.com/oauth2/token`
 	
-	* **Client ID**: this the clientID of the admin we created in Module 1D
-	* **Client Secret**:  this the client secret of the admin we created in Module 1D
-	* **Scope**: it's optional (the token will be scoped anyways) we can leave it blank
-		
+	* **Client ID**: モジュール1Dで作成した admin の クライアントID
+	* **Client Secret**:  モジュール1Dで作成した admin の クライアントシークレット
+	* **Scope**: 空白（オプションです）
+	
+
 	![postman add auth](images/1E-postman-gettoken.png)
+	
 
-	And click **Request Token**
+**Request Token** をクリックします。
+1. これで、Cognito から返された新しいトークンが表示されます。下にスクロールして **Use Token** をクリックします。
 
-1. Now you should see the new token returned from Cognito. scroll down and click **Use Token**
+1. Edit Folder ウィンドウに戻り、**update** をクリックします。
 
-1. Back to the Edit Folder window, click **update**
+1. ツールバーの左にある **Manage Partner** フォルダの **POST Create Partner** API に移動します。
 
-1. Now, go to the **POST Create Partner** API in the **Manage Partner** Folder in the left hand toolbar
-
-1. In the **Body** tab, fill in the name of the partner company to register, and click **Send**. You should get in the response the client ID and secret for the company you registered. 
+1. **Body** タブに登録したいパートナー企業の名前を入力し、**Send** をクリックします。 ClientID と Secret がレスポンスとして入手できるはずです。
 
 	![](images/1E-register-partner-success.png)
 	
-1. Note down the `ClientId` and `ClientSecret` from the output in your text editor. This is the client credentials "Cherry Corp" will use to customize unicorns! 
+1. `ClientId` と `ClientSecret` をメモしておいてください。これは「Cherry Corp」 が、ユニコーンのカスタマイズする際に使用するクライアントの認証情報です！
 
-### <a name="1F"></a>Module 1F: Use the partner company client credentials to customize unicorns
+### <a name="1F"></a>モジュール 1F: パートナー企業のクライアント認証情報を使用したユニコーンのカスタマイズ
 
-Now we have a set of client credentials for the partner company you just registered. Let's pretend to be "Cherry company" (or whatever company you just registered) and submit some unicorn customizations!
+これで、登録したパートナー企業のクライアント認証情報のセットができました。"Cherry Corp"（またはあなたが登録した会社）のふりをして、ユニコーンのカスタマイズを提出してみましょう！
 
 
-1. Request an access token from the new company client credentials you just generated. (You will notice this is very similar steps as you did in [module 1E](#1E)!
+1. 作成したばかりの新しい会社のクライアント認証情報でアクセストークンをリクエストします。（これは[モジュール 1E](#1E)の手順とよく似ています）
 
-	1. Right click on the **Customize_Unicorns** collection and **edit**
+	1. **Customize_Unicorns** コレクションを右クリックして **edit** をクリックします。
 
-		> Ensure to right click on the overarching **Customize_Unicorns** collection rather than any of the subfolders. Doing so will set the default authorization header to use for any API in the collection, unless overridden by the sub-folders (as we just did in module 1E)
+		> サブフォルダではなく、全体の **Customize_Unicorns** コレクションを右クリックしてください。そうすると、サブフォルダによってオーバーライドされない限り（モジュール1Eで行ったように）、コレクション内の API に使用するデフォルトの認証ヘッダーが設定されます
 		
-	1. Go to **Authorization** tab, pick Oauth2.0
-	1. Use the same Cognito token url (hint: Cognito domain + `/oauth2/token`)
-	1. Use the Client ID generated from the **POST /partner** API you just created from step [module 1E](#1E)
+	1. **Authorization** タブに移動し、OAuth2.0 を選択します。
+	1. 同じ CognitoトークンURL を使用します (ヒント: Cognito ドメイン + `/oauth2/token`)
+	1. [モジュール 1E](#1E)の **POST /partner** APIで生成した Client ID を使用します
 
-		> Tip: if you forget the client ID/secret, you can also retrieve it from the Cognito User pool console under **App clients**
+		> Tip: もし Client ID や Secretを忘れたら、Congnito ユーザプールのコンソールの **全般設定** - **アプリクライアント** で確認することができます。
 	
 		![](images/1F-get-token-for-company.png)
 
-1. Test making a request for describing sock customziation options again. It should succeed this time!
+1. ソックスのカスタマイズオプションを表示するリクエストを送信してテストします。今回は成功するはずです！
 
-1. Now you can create a unicorn customziation! Choose the **POST create Custom_Unicorn** API from the collection, in the **Body** tab, enter 
+1. これで、あなたはユニコーンのカスタマイズを作成することがでるようになりました！ コレクションから **POST create Custom_Unicorn** API を選択し、**Body** タブで次のように入力します。
 
 	```javascript
 	{  
@@ -415,17 +412,17 @@ Now we have a set of client credentials for the partner company you just registe
 	}
 	```
 	
-	If it's successful, you should get a response with the ID of the customization that was just submitted:
+	成功すると、カスタマイズ ID を含んだレスポンスが得られるはずです。
 	
 	`{ "customUnicornId": X}`
 
 	![create customization on postman](images/1E-create-customization.png)
 	
-	
-1. You can also test out other APIs in the collection, e.g. LIST, GET, DELETE on Unicorn Customizations. 
+1. コレクションの他の API もテストできます。（ユニコーンのカスタマイズの LIST、GET、DEL など）
 
 
 
-## Next Step
+## 次のステップ
 
-You have now completed Module 1 and added auth to your serverelss application. You can now return to the workshop [landing page](../../README.md) to pick another module to work on!
+モジュール 1 を完了しサーバレスアプリケーションに認証機能を追加しました。  
+ワークショップの[トップページ](../../README.md) に戻り、他のモジュールを続けてください。

@@ -1,97 +1,104 @@
 # リソースのクリーンアップ
 
-このページでは、各モジュールで作成したリソースをクリーンアップする手順を説明します。 
+このページでは、各モジュールで作成したリソースをクリーンアップする手順を説明します。
+実施したモジュールについて下記の手順を実行してください。 
 
-## リソースのクリーンアップ手順
+## Resource Cleanup Instructions
 
-1. **モジュール1：認証**で作成したCognito User pool domain を削除します 
-
-  <details>
-  <summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
-
-
-  1. [Cognito Console](https://console.aws.amazon.com/cognito/home)に移動します
-  1. **Manage User Pools**に移動します
-  1. `CustomizeUnicorns-users` user poolを選択します
-  1. **App integration**の**Domain name**に移動します
-  1. **Delete domain** をクリックします
-  1. 確認して削除します
-
-  </details>
-
-1. **モジュール5：使用プランで** API Gateway Usage Planを削除します 
-
-  <details>
-  <summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
-
-
-  1. [API Gateway Console](https://console.aws.amazon.com/apigateway/home) に移動します
-  1. **Usage plans** に移動します
-  1. `Basic` Usage Planに移動します
-  1. In the **Details** tab under **Associated API Stages**, remove the `CustomizeUnicorns` API
-  1. On the upper right hand corner, click on **Actions** and choose **Delete Usage Plan**
-
-  </details>
-
-1. Delete the secret from AWS Secrets Manager if you created one in **Module 2: Secrets**
+1. **モジュール1：認証**で作成した Cognito User pool domain を削除します 
 
 	<details>
-	<summary><strong>Click here to expand for detailed instructions </strong></summary><p>
+	<summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
 	
-	1. Go to the [Secrets Manager Console](https://console.aws.amazon.com/secretsmanager/home)
-	1. Select the `secure-serverless-db-secret` secret
-	1. In **Actions** select **Delete secret** 
-	1. Enter `7` (minimum waiting period) for waiting period and click **Schedule deletion**
+	1. [Cognito コンソール](https://console.aws.amazon.com/cognito/home)に移動します
+	1. **Manage User Pools**に移動します
+	  1. `CustomizeUnicorns-users` user poolを選択します
+	  1. **App integration**の**Domain name**に移動します
+	  1. **Delete domain** をクリックします
+	  1. 確認して削除します
 
 	</details>
 
-1. Delete the AWS WAF if you created one in **Module 6: WAF**
+1. **モジュール5：使用プラン**で作成した API Gateway Usage Planを削除します 
 
 	<details>
-	<summary><strong>Click here to expand for detailed instructions </strong></summary><p>
+	<summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
 	
-	1. Go to the [WAF Console](https://console.aws.amazon.com/waf/home)
-	1. In the navigation pane, choose **Web ACLs**.
-	1. Choose the `ProtectUnicorns` web ACL you created in the module 6
-	1. On the **Rules** tab in the right pane, choose Edit web ACL.
-	1. Remove all rules from the web ACL by choosing the **x** at the right of the row for each rule. This doesn't delete the rules from AWS WAF, it just removes the rules from this web ACL.
-	1. Choose **Update**
+	1. [API Gateway Console](https://console.aws.amazon.com/apigateway/home) に移動します
+	  1. **Usage plans** に移動します
+	  1. `Basic` Usage Planに移動します
+	1.  **Associated API Stages**の下の**Details**タブで、,  `CustomizeUnicorns` API を削除します
+	1. 右上にある**Actions** をクリックし、**Delete Usage Plan**を選択します
+
+	</details>
+
+1. **モジュール2: Secrets** で作成した AWS Secrets Manager の secret を削除します
+
+	<details>
+	<summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
+	
+	1. [Secrets Manager コンソール](https://console.aws.amazon.com/secretsmanager/home)に移動します
+	1. `secure-serverless-db-secret` の secret を選択します
+	1. **Actions** から**Delete secret**  を選択します
+	1. waiting period に`7`を入力し (最小値) **Schedule deletion**をクリックします
+
+	</details>
+
+1. **モジュール 6: WAF** で作成した AWS WAF を削除します
+
+	<details>
+	<summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
+	
+	1. [WAF コンソール](https://console.aws.amazon.com/waf/home)に移動します
+	1. ナビゲーションから **Web ACLs**を選択します
+	1. 作成した`ProtectUnicorns` web ACL を選択します
+	1. **Rules** タブの右側にある Edit web ACLをクリックします
+	1. 各行の右にある **x** をクリックしすべてのルールを削除します
+	1. **Update** をクリックします
 	1. Dissasociate the API gateway from the WAF by going to the section **AWS resources using this web ACL** in the **Rules** tab and clicking the  **x** at the right of the API gateway stage
-	1. On the **Web ACLs** page, confirm that the web ACL that you want to delete is selected, and then choose **Delete**. 
-	1. In the navigation pane, choose **Rules**.  
-	1. Go to each of the 3 rules we created, edit the rule to disassociate all the conditions for each rule
-	1. Delete the rules
-	1. Delete the 3 conditions we created in the workshop
+	   **AWS resources using this web ACL**セクションの**Rules** タブにあるAPI gateway stageの **x**をクリックすうることで、API gatewayとの関連付けを削除します 
+	1. **Web ACLs** ページで、削除する web ACL を選択し**Delete** をクリックします
+	1. ナビゲーションから **Rules** を選択します. 
+	1. Go to each of the 作成した３つルールについて、**それぞれ**条件の関連付けを削除します。
+	1. ３つのルールを削除します
+	1. 作成した３つの条件を削除します
 	</details>
 
-1. Delete `CustomizeUnicorns` CloudFormation stack
+1. CloudFormation の `CustomizeUnicorns`  スタックを削除します
 
 	<details>
-	<summary><strong>Click here to expand for detailed instructions </strong></summary><p>
+	<summary><strong>詳細手順はここをクリックして展開してください </strong></summary><p>
 	
-	1. Go to the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/home)
-	1. Select the `CustomizeUnicorns` Stack
-	1. Under **Actions**, choose **Delete Stack**
+	1. [CloudFormation コンソール](https://console.aws.amazon.com/cloudformation/home)へ移動します
+	1. `CustomizeUnicorns` スタックを選択します
+	1. **Actions** から**Delete Stack**をクリックします
 	
 	</details>
 
-1. Empty the deployment s3 bucket:
+1. s3 バケットを空にします
 	
 	<details>
-	<summary><strong>Click here to expand for detailed instructions </strong></summary><p>
+	<summary><strong>詳細手順はここをクリックして展開してください  </strong></summary><p>
 
-	1. Go to the [S3 Console](https://console.aws.amazon.com/s3/home)
-	1. Search for bucket starting with `secure-serverless-deploymentss3bucket`
-	1. Click on the checkmark for the bucket and click on the **Empty** button
+	1. [S3 コンソール](https://console.aws.amazon.com/s3/home)に移動します
+	1. `secure-serverless-deploymentss3bucket`で始まるバケットを探します
+	1. バケットのチェックボックスを選択し、**Empty** ボタンをクリックします
 	
 		![](images/empty-s3-bucket.png)
 	
-	1. Type in the bucket name to confirm the empty operation 
+	1. 確認ためバケット名を入力して実行します
 	</details>
 
-1. Delete the `Secure-Serverless` resource setup CloudFormation stack
+1. CloudFormation の `Secure-Serverless` スタックを削除します
 
-1. CloudWatch Logs
-AWS Lambda automatically creates a new log group per function in Amazon CloudWatch Logs and writes logs to it when your function is invoked. You should delete the log group for the lambda functions. (You can search for log groups starting with `/aws/lambda/CustomizeUnicorn` prefix. 
+1. CloudWatch Logs のログを削除します
+AWS Lambda は、関数ごとに CloudWatch ロググループを自動的に作成し、関数が呼び出されたときにログを書き込みます。 CloudWatch Logsの `/aws/lambda/CustomizeUnicorn` で始まる ロググループを削除します
 
-1. Delete the RDS snapshot of the aurora database in the RDS console
+1. RDS コンソールで Aurora データベースの RDS スナップショットを削除します。
+
+
+
+クリーンアップは以上で終了です。
+
+[トップページ](../../README.md) 
+

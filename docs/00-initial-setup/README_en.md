@@ -56,7 +56,7 @@ If you are completing this workshop at an AWS-sponsored event where an AWS accou
 <summary><strong> Option 1: If you are using AWS Event Engine </strong></summary><p>
 If you are using AWS Event Engine, an AWS CloudFormation stack should be automatically created for you.
  
- 
+
 1. Go to [https://dashboard.eventengine.run](https://dashboard.eventengine.run)
 1. In the next screen, put in the hash code you received from the event organizer, and click **Proceed**
 
@@ -67,7 +67,7 @@ If you are using AWS Event Engine, an AWS CloudFormation stack should be automat
    ![](images/00-event-engine-console-login.png)
 
 1. Click on **Open AWS Console** or use the **Copy Login Link** button and open the copied URL in **Chrome** or **Firefox**
-    
+   
     ![](images/00-event-engine-console-login-2.png)
     
 1. Type in `CloudFormation` in the **Find Services** search bar to go to the CloudFormation console
@@ -78,6 +78,7 @@ If you are using AWS Event Engine, an AWS CloudFormation stack should be automat
 
     ![](images/00-ee-cloudformation.png)
     
+
 </details>
 
 <details>
@@ -122,7 +123,7 @@ If you are working in your own AWS account, follow the steps below to launch a C
 ## Module-0B: Access Cloud9
 
 As part of the above step, an [Cloud9 IDE instance](https://aws.amazon.com/cloud9/) is created. All of the coding and commands in this workshop should be run inside the Cloud9 IDE environment. 
- 
+
 1. Open a new browser tab and go to the Cloud9 console: `https://console.aws.amazon.com/cloud9/home` (You can also find the Cloud9 console in the AWS console by clicking on **Services** in the navigation bar on the top, and search for `cloud9` and enter)
 
 1. Click on ***Your environments*** (you may need to expand the left sidebar) 
@@ -277,13 +278,13 @@ The code for the lambda functions resides within the path `aws-serverless-securi
 $ cd ~/environment/aws-serverless-security-workshop/src/app
 $ npm install
 ```
-	
+
 > Note: If you see this warning
 > 
 > <img src="images/0D-vulnerability.png" width="65%"/>
 > 
 > Don't worry. We will be addressing the dependency vulnerability in [**module 7**](../07-dependency-vulnerability/README.md) :) 
-	
+
 The `src/app` folder has a few files: 
 	
 - **unicornParts.js**: Main file for the lambda function that lists unicorn customization options.  
@@ -465,7 +466,7 @@ In addition to the lambda code, the configurations for Lambda function and the R
 $ aws cloudformation describe-stacks --region $REGION --stack-name CustomizeUnicorns --query "Stacks[0].Outputs[0].OutputValue" --output text
 https://rs86gmk5bf.execute-api.us-west-2.amazonaws.com/dev/
 ```
-	
+
 	Alternatively, you can go to the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/home), find the `CustomizeUnicorns` stack and look in the **Output** tab
 
 1. You can test in your browser (or `curl`) for the following APIs. Remember to append the API path (e.g. `/socks`) to the endpoint

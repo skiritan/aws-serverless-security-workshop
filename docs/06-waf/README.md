@@ -1,66 +1,66 @@
-# Module 6: WAF 
+# モジュール 6: WAF 
 
-AWS WAF is a web application firewall that helps protect your web applications from common web exploits that could affect application availability, compromise security, or consume excessive resources. For example, you can reject requests that matches **SQL injection** and **Cross-Site Scripting (XSS)**. Additionally, you can filter web requests based on **IP address**, **geographic area**, **request size**, and/or string or **regular expression** patterns using the rules. You can put these conditions on HTTP headers or body of the request itself, allowing you to create complex rules to block attacks from specific user-agents, bad bots, or content scrapers. You can also take advantage of **Managed Rules** from **AWS Marketplace** to get immediate protections for your APIs from common threats, such as OWASP Top 10 security risks and Common Vulnerabilities and Exposures (CVE).
+AWS WAF は Webアプリケーションファイアウォールで、アプリケーションの可用性に影響を与えたり、セキュリティを低下させたり、リソースを過剰に消費する一般的な攻撃から Web アプリケーションを保護します。例えば **SQLインジェクション** や **クロスサイトスクリプティング(XSS)**にマッチしたリクエストを拒否することができます。さらに、ルールを利用して**IPアドレス**や **地理情報**、**リクエストサイズ**、文字列や**正規表現**に基づいてリクエストをフィルタリングすることもでき、特定のユーザーエージェント、悪質なボット、コンテンツスクレーパーからの攻撃をブロックするためのルールを作成することも可能です。
+また、**AWS Marketplace** にある **マネージドルール** を利用して、すぐにOWASP Top10 や  共通脆弱性識別子（CVE）などの一般的な脅威から API を保護することもできます。
 
+このモジュールでは、WAF ACL を作成し、API Gateway にアタッチします。
 
-In this module, you will create a WAF ACL and attach it to the API Gateway we created.
+### オプション: APIに対してSQLインジェクションを行う
 
-### Module 6 - Optional: attack your API with SQL injection!
-
-If you have completed **Module 3: Input validation on API Gateway**, your API now has some basic input validation in place for the JSON request body. However, it turns out our application is still vulnerable to SQL injection attacks as part of the request URI. This optional module shows how you can perform the attack.
+もし **モジュール 3: API Gateway の入力値チェック**が完了済みであれば、API には JSON リクエストボディの基本的な入力検証が実装されています。しかし、SQL インジェクション攻撃に対してまだ一部が脆弱であることが判明しています。このオプションは、攻撃を実行する方法を示します。
 
 <details>
-<summary><strong>Click to expand for optional step instructions </strong></summary>
+<summary><strong>クリックするとオプションの手順が表示されます。 </strong></summary>
 
 
-1. In Postman, go to the **GET Custom_Unicorn** request. Change the request URL to include a SQL injection in the request URI: 
+1. Postman で **GET Custom_Unicorn** リクエストに移動します。リクエストURLを変更して、SQLインジェクションを行うようにします。
 
 	```
 	{{base_url}}/customizations/1; drop table Custom_Unicorns;
 	```
 
-	and Click **Send**. 
+	**Send**をクリックします。 
 
 	![screenshot](images/SQLi-attack-success.png)
 
-	You may get a "`Error querying`" response back because the SQL injection messed up the database query so not all of it succeeded (you can check the Cloudwatch Logs for the **CustomizeUnicorns-CustomizeUnicornFunction** Lambda function on what SQL queries got executed). However, the injected query to drop the `Custom_Unicorns` table should have succeeded. 
+	SQLインジェクションの命令がすべて成功したわけではないので、`Error querying`というレスポンスが返ってくるかもしれません(どのような SQL クエリが実行されたかについては、**CustomizeUnicorns-CustomizeUnicornFunction** Lambda関数の Cloudwatch Logs で確認できます).  しかし、`Custom_Unicorns` テーブルを削除するためのクエリは成功したはずです。
 
-1. If you now try to submit some valid quests, such as LIST or POST customizations, you will now get error back, because the `Custom_Unicorns` table got dropped by our evil attack! 
+2. 確認のために LIST や POST ような有効なリクエストを行うと、エラーが返ってくるようになっています。
+   SQLインジェクションによって、テーブルが削除されています！
 
-1. To recover from this, go to your cloud9 browser tab, connect to the database again through the mysql command line 
+1. 復旧するには、cloud9 に移動し、mysqlコマンドラインを使用してデータベースに再度接続します
 	
 	```
 	 cd ~/environment/aws-serverless-security-workshop/src
 	 mysql -h <replace-with-your-aurora-cluster-endpoint> -u admin -p
 	```
 	
-	If you have gone through Module 4 and set the DB to require the `admin` user to use  
+	モジュール 4 を完了した場合は、 設定した`admin` ユーザ のパスワードを入力してください。 
+また、**モジュール 2: Secrets Manager **を行った場合は、Secrets ManagerによってDBのパスワードがローテーションされていることもあります。新しいパスワードを取得するには、Secrets Managerに移動して**Retrieve secret value** ボタンをクリックしてください）
+	
 
-	type in the DB password (if you have gone through **Module 2: Secrets Manager**, your DB password may have been rotated by Secrets Manager. You can retrieve the new password by going to the Secrets Manager and click on the **Retrieve secret value** button 
-
-1. In the MySQL cli prompt, you can run the show tables command to verify the `Custom_Unicorns` table is gone: 
-
+MySQL CLI プロンプトで show tablesコマンドを実行して `Custom_Unicorns` テーブルが削除されていることを確認します。
+	
 	```
 	use unicorn_customization;
 	show tables;
 	```
-	See screenshot: 
+	出力例 
 	
 	![screenshot](images/recreate-table.png)
-	
-1. Rerun the DB initialization script to recreate the `Custom_Unicorns` table:
+
+1. DB初期化スクリプトを再実行して `Custom_Unicorns` テーブルを再作成します。
 
 	```
 	drop table Capes, Glasses, Horns, Socks;
 	source init/db/queries.sql;
 	```
 	
-	> You should see the output includes this error message: 
+	> 下記のようなエラーメッセージが表示されますが、無視しても構いません。
 	>```ERROR 1062 (23000): Duplicate entry 'Placeholder company' for key 'NAME'```
-	> This is expected because we didn't want to overwrite the `company` table. You can ignore the error message 
+	> これは `company` テーブルを残したままスクリプトを実行したためです。
 	
-	
-6. List the tables again to verify the `Custom_Unicorns` table is recreated. 
+6. MySQL CLI プロンプトで `Custom_Unicorns` テーブルが作成されていることを確認します。
 
 	```
 	show tables;
@@ -68,154 +68,152 @@ If you have completed **Module 3: Input validation on API Gateway**, your API no
 
 </details>
 
-### Module 6A: Create a WAF ACL 
+### モジュール 6A: WAF ACL の作成
 
-Now let's start creating an AWS WAF to give us additional protection: 
+それでは、AWS WAF を利用して対策していきましょう。
 
-1. Go to the [AWS WAF Console](https://console.aws.amazon.com/wafv2/home#/wafhome)
+1. [AWS WAF コンソール](https://console.aws.amazon.com/wafv2/home#/wafhome)へ移動します。
 
-1. The AWS WAF console has recently released a new version: see [Introducing AWS Managed Rules for AWS WAF
-](https://aws.amazon.com/about-aws/whats-new/2019/11/introducing-aws-managed-rules-for-aws-waf/). However, this workshop has not been yet adapted to the new version. Therefore, we will be using the classic version of the WAF console. You can use the **Switch to AWS WAF Classic** button to switch to classic:
+1. AWS WAFは新しいバージョンがリリースされていますが ([AWS WAF 用 AWS マネージドルールの紹介](https://aws.amazon.com/about-aws/whats-new/2019/11/introducing-aws-managed-rules-for-aws-waf/))、このワークショップではまだ新バージョンには対応していません。そのため、今回はクラシック版WAFコンソールを使用します。クラシックに切り替えるために**Switch to AWS WAF Classic**ボタンをクリックします。
 
-	![](images/switch-waf-classic.png)
-
-1. Click on **Create web ACL** on the WAF Classic console
+![](images/switch-waf-classic.png)
+	
+1. WAF Classicコンソールの **Create web ACL** をクリックします。
 
 	![](images/classifc-waf-opening.png)
 	
-1. In Step 1 of the ACL creation wizard, fill in:
+1. ACL作成ウィザードのステップ1で、以下を入力します。
 
 	* **Web ACL Name**: `ProtectUnicorn`
-	* **CloudWatch metric name**: this should be automatically populated for you
-	* **Region**: select the AWS region you chose for previous steps of the workshop
-	* **Resource type to associate with web ACL**: Pick `API Gateway`
-	* **Amazon API Gateway API**: Pick the API Gateway we deployed previously, `CustomizeUnicorns`
-	* **Stage**: select `dev`
+	* **CloudWatch metric name**:  デフォルト（自動的に入力されるはずです）
+	* **Region**: ワークショップの構築時に選択したAWSリージョン
+	* **Resource type to associate with web ACL**: `API Gateway`
+	* **Amazon API Gateway API**:  `CustomizeUnicorns` 
+	* **Stage**: `dev`
 
 	![screenshot](images/web-acl-name.png)
 	
-	and click **Next**
+	**Next**をクリックします。
 
-### Module 6B: Create WAF conditions
+### モジュール 6B: WAF 条件の作成
 
-1. Next you will create 2 different conditions. Let's start with a condition to restrict the maximum size of request body: 
+1. 次に、2つの条件を作成していきます。まずはリクエストボディの最大サイズを制限する条件を作成します。
 
-	* Go to **Size constraint conditions** section, click **Create condition**
-	* Give the condition a name, like `LargeBodyMatch`
-	* In Filter settings, add a filer on 
+	* **Size constraint conditions** セクションに移動し、 **Create condition**をクリックします
+	* 名前として `LargeBodyMatch` を設定します。
+	* In Filter settings, add a filer on 　条件の設定で、フィルターを追加します。
 		*  	**Part of the request to filter on**: body
 		*  **Comparison operator**: Greater than
 		*  **Size (Bytes)**: 3000
-	* Click **Add filter**  
-	* After the filter is added to the condition, click **Create**
+	* **Add filter**  をクリックします。
+	* 条件にフィルターを追加した後、**Create**をクリックします。
 
 	![screenshot](images/large-body-condition.png)
 	
+1. 次に、SQLインジェクション対策の条件を追加してみましょう。
 
-1. Next, let's add a SQL injection condition. 
+  * **SQL injection match conditions** セクションに移動し、**Create condition**をクリックします
+  * 名前として `SQLinjectionMatch`を設定します
+  * ここでは、リクエストをより検査するために複数のルールを追加します
+  *  **Filter settings**で以下の４つのフィルターを追加します
 
-	* Go to **SQL injection match conditions** section, click **Create condition**
-	* Give the condition a name, like `SQLinjectionMatch`
-	* Here, we want to add multiple rules to inspect multiple aspects of the request: request body, request URI and query strings 
-	* In the **Filter settings**, add 4 filters:
+  	<table>
+  	  <tr>
+  	    <th></th>
+  	    <th>Part of the request to filter on</th>
+  	    <th>Transformation</th>
+  	  </tr>
+  	  <tr>
+  	    <td>1</td>
+  	    <td>Body</td>
+  	    <td>None</td>
+  	  </tr>
+  	  <tr>
+  	    <td>2</td>
+  	    <td>Body</td>
+  	    <td>URL decode</td>
+  	  </tr>
+  	  <tr>
+  	    <td>3</td>
+  	    <td>URI</td>
+  	    <td>URL decode</td>
+  	  </tr>
+  	  <tr>
+  	    <td>4</td>
+  	    <td>Query string</td>
+  	    <td>URL decode</td>
+  	  </tr>
+  	</table>
+  * **Create**をクリックします。
 
-		<table>
-		  <tr>
-		    <th></th>
-		    <th>Part of the request to filter on</th>
-		    <th>Transformation</th>
-		  </tr>
-		  <tr>
-		    <td>1</td>
-		    <td>Body</td>
-		    <td>None</td>
-		  </tr>
-		  <tr>
-		    <td>2</td>
-		    <td>Body</td>
-		    <td>URL decode</td>
-		  </tr>
-		  <tr>
-		    <td>3</td>
-		    <td>URI</td>
-		    <td>URL decode</td>
-		  </tr>
-		  <tr>
-		    <td>4</td>
-		    <td>Query string</td>
-		    <td>URL decode</td>
-		  </tr>
-		</table>
-	* Click **Create**
+  ![screenshot](images/sql-condition.png)
+
+1. **Next** をクリックして**Create rules** ページに進みます。
+
+
+### モジュール 6C: WAF ルールの作成
+
+
+1.   **ルール**は１つまたは複数の**条件**で構成することができます。
+まず、リクエストのボディサイズの条件を使ってルールを作成してみましょう。
 	
-	![screenshot](images/sql-condition.png)
-
-1. Click **Next** to advance to the **Create rules** page 
-
-
-### Module 6C: Create WAF rules
-
-
-1.  Next, we create **Rules** that are composed of one or more **Conditions**. Let's start by creating a rule based on the request body size condition:
-
-	* Click **Create Rule** 
-	* Give it a name, like `LargeBodyMatchRule`
-	* For 	**Rule type**, keep `Regular rule`
-	* In Add conditions section, select 
+	* **Create Rule** をクリック
+	* 名前として `LargeBodyMatchRule`を設定します
+	* **Rule type**は`Regular rule`を指定します
+	* Add conditions セクションで下記を選択します
 		* 	`does`
 		*  `match at least one of the filters in the size constraint condition `
-		*  `LargeBodyMatch`  -- the name of the condition we created for large request body in 6B 
-
-	* Then click **Create** 
+	*  `LargeBodyMatch`  -- さきほど作成したラージリクエストボディ制限の条件 
+	
+	* **Create** をクリックします
 	
 	![screenshot](images/large-body-rule.png)
 	
-1. Next, we create the rule for SQL injection. 
+1. 次に、SQLインジェクション対策のルールを作成します。
 
-	* Click **Create Rule** 
-	* Give it a name, like `SQLinjectionRule`
-	* For **Rule type**, keep `Regular rule`
-	* In Add conditions section, select 
+	* **Create Rule** をクリックします
+	* 名前として `SQLinjectionRule` を設定します
+	* **Rule type**は`Regular rule`を指定します
+	* Add conditions セクションで下記を選択します
 		* 	`does`
 		*  `match at least one of the filters in the SQL injection match condition `
-		*  `SQlInjectionMatch`  -- the name of the condition we created for SQL injection in 6B 
-	*  Then click **Create**
+		*  `SQlInjectionMatch`  -- さきほど作成したSQLインジェクション対策の条件 
+	*  **Create** をクリックします
 
 	![screenshot](images/sql-rule.png)
 
-1. Lastly, we can create a rate-based rule that prevents an overwhelming number of requests (either valid or invalid) from flooding our API:
+1. 最後に、圧倒的な数のリクエストが API に殺到するのを防ぐために、レートベースのルールを作成します。
 
-	* Click **Create Rule** 
-	* Give it a name, like `RequestFloodRule`
-	* For **Rule type**, select `Rate-based rule`
-	* For **Rate limit**, use `2000` 
-	*  Then click **Create**
-
+	* **Create Rule** をクリックします
+	* 名前として  `RequestFloodRule` を設定します
+	* **Rule type**は`Rate-based rule`を指定します
+	
+	   **Rate limit**に`2000` を設定します
+*  **Create** をクリックします
+	
 	![screenshot](images/request-flood-rule.png)
 	
-1. You should now see 3 rules in like below. Ensure you select `Block` if the request matches any of the rules. 
- 
-	For **Default action**, select `Allow all requests that don't match any rules`
+1. これで、以下のような3つのルールが表示されるはずです。防御を行うためにActionが`Block`になっていることを確認してください。
+
+	また、**Default action** は `Allow all requests that don't match any rules`を選択してください
 
 	![screenshot](images/list-rules.png)
 
-1. Click **Review and create** 
+1. **Review and create** をクリックします
 
-1. In the next page, review the configuration and click **Confirm and Create** 	
+1. 次のページで、設定を確認し **Confirm and Create** をクリックします
 	
 	![screenshot](images/review-acl.png)
 
-You have now added a WAF to our API gateway stage! 
+これで API gateway に WAF が追加されました！
 
-### Module 6D: Test requests with WAF protection 
+### Module 6D: 確認のためのリクエスト送信
 
-1. First, send some valid requests using Postman to make sure well-behaving requests are getting through. 
+1. まず Postman で有効なリクエストを送信して、リクエストが正しく処理されているかを確認します。
 
-1. Next, we can easily test the large request body rule by sending a few **POST /customizations** requests with a giant request body. If you don't receive an error immediately after applying WAF, you might need to wait a minute to for these changes to propagate.
+1. 巨大なリクエストボディを持つ **post /customizations** リクエストを送信することで、リクエストボディのルールをテストすることができます。
 
-	In Postman, choose the **POST create Custom_Unicorn** request and replace the request body with: 
-
-
+	Postmanで、**POST create Custom_Unicorn**リクエストを選択して、リクエストボディを以下に置き換えます。
 
 	```
 	{  
@@ -229,49 +227,49 @@ You have now added a WAF to our API gateway stage!
 	
 	```
 	
-	You should see your requests getting blocked with a **403 Forbidden** response
+	**403 Forbidden** という応答で、リクエストがブロックされていることを確認してください。
 	
-	&#128161; **Note:** It may take a minute for WAF changes to propagate. If your test request went through successfully, retry a few times until you start receiving 403 errors as WAF kick in effect.  &#128161;
-	
-1. Next, let's try a request with a SQL injection attack in the request URI for a **GET /customizations/{id}** request
+	&#128161; **Note:** WAF の変更が有効になるまで 1 分ほどかかるかもしれません。正常な応答があった場合は何度か再試行してください。 &#128161;
 
-	In Postman, choose the **GET Custom_Unicorn** request and replace the URL with: 
+1. 次に、**GET /customizations/{id}**リクエストのリクエストURIに SQLインジェクション攻撃を加えたリクエストを試してみましょう。
+
+	Postmanで**GET Custom_Unicorn**リクエストを選択し、URLを以下に置き換えます。
 
 	```
 	{{base_url}}/customizations/1; drop table Custom_Unicorns;
 	```
 
-	You should see your requests getting blocked with a **403 Forbidden** response
+	**403 Forbidden** という応答で、リクエストがブロックされていることを確認してください。
 
-1. The WAF console gives you metrics and sample requests that are allowed/denied by the WAF rules. You can find this information by going to the WAF console, under **Web ACLs**, select the AWS region and then the WAF we just created. 
+1. WAFコンソールで、許可/拒否されたリクエストのメトリクスとサンプルを見ることができます。この情報は、WAFコンソールの **Web ACLs** でAWSリージョンを選択し、先ほど作成したWAFを選択することで確認することができます。
 
-	**Note:** It can take a few minutes before the metrics and sample requests start showing up in the WAF console.
+	**Note:** メトリクスとサンプルリクエストが表示されるまでに数分かかることがあります。
 
 	![screenshot](images/request-sample.png)
 
-## Extra credit 
+## オプション: レート制限の確認
 
-Use a load test tool like [Artillery](https://artillery.io/docs/getting-started/) to test sending more than 2000 requests in 5 minutes to test the request flood rule. 
+[Artillery](https://artillery.io/docs/getting-started/)のような負荷テストツールを使用して、5分で2000以上のリクエストを送信してリクエストフラッドルールをテストすることができます。
 
-Note that you will need to configure Artillery to send the `Authorization` headers.
+Artilleryが `Authorization` ヘッダを付加して送信する設定になっていること注意してください。
 
-If you have completed **Module 5: Usage Plan**, your API may be throttled first by the usage plan based on the API key. 
+**モジュール5: Usage Plan**を完了している場合は、WAFではなく利用計画によってAPIがスロットルされる場合があります。
 
-## Want more?
+## まとめ
 
-In this module, we only explored 3 types of AWS WAF rules:
+このモジュールでは今回、WAFルールを３種類作成しました
 
-* SQL Injection
-* Request size constraint
-* Rate limiting 
+* SQL インジェクション
+* リクエストサイズ上限
+* レート制限
 
-There are a lot more other types of protection you can enable, based on the types of risks you want to defend against 
+There are a lot more other types of protection you can enable, based on the types of risks you want to defend against この他にも、より多くの種類があり、防御したいリスクにもとづいて利用することができます。
 
-Check out the below to learn about other type of rules: 
+その他のルールについては、以下をチェックしてみてください。
 
-* AWS WAF Security Automations: [https://aws.amazon.com/solutions/aws-waf-security-automations/](https://aws.amazon.com/solutions/aws-waf-security-automations/)
-* Managed WAF Rules from AWS Marketplace: [https://aws.amazon.com/marketplace/solutions/security/waf-managed-rules](https://aws.amazon.com/marketplace/solutions/security/waf-managed-rules)
+* AWS WAF セキュリティオートメーション: [https://aws.amazon.com/solutions/aws-waf-security-automations/](https://aws.amazon.com/solutions/aws-waf-security-automations/)
+* AWS Marketplace : マネージド WAF Rules: [https://aws.amazon.com/marketplace/solutions/security/waf-managed-rules](https://aws.amazon.com/marketplace/solutions/security/waf-managed-rules)
 
-## Next Step 
+## 次のステップ
 
-Return to the workshop [landing page](../../README.md) to pick another module.
+ワークショップの[トップページ](../../README.md) に戻り、他のモジュールを続けてください。

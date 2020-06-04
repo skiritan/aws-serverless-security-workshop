@@ -1,52 +1,53 @@
-# Module 3: Input validation on API Gateway
+# モジュール 3: API Gateway の入力値チェック
 
-A quote from the OWASP website: 
+OWASP サイトにこんな記述があります。
 
-> "*The most common web application security weakness is the failure to properly validate input from the client or environment*."
+> "*Webアプリケーションのセキュリティ上の最も一般的な弱点は、クライアントからの入力を適切に検証できないことです*."
 > 
 >  --- [**OWASP** (The Open Web Application Security Project)](https://www.owasp.org/index.php/Data_Validation)
 
-A great [XKCD comic](https://xkcd.com/327/) demonstrate this point well: 
+[XKCD コミック](https://xkcd.com/327/) にもこの点をよく示した４コマ漫画があります。 
 
 ![xkcd exploits_of_a_mom ](https://imgs.xkcd.com/comics/exploits_of_a_mom.png)
 
-You can configure API Gateway to perform basic validation of an API request before proceeding with the integration request. When the validation fails, API Gateway immediately fails the request, returns a 400 error response to the caller, and publishes the validation results in CloudWatch Logs. This reduces unnecessary calls to the backend. More importantly, it lets you focus on the validation efforts specific to your application.
+API Gateway を設定して、統合リクエストを処理する前に、APIへのリクエストの内容を検証することができます。もし検証に失敗した場合、API Gateway は呼び出し元に400 エラー応答を返し、検証結果をCloudWatch Logsに保存します。これにより、バックエンドへの不要な呼び出しを減らすことができ、アプリケーションの検証作業に集中できるようになります。
 
-For example, in our application, when defining an customization, we have to be sure that our new customization should have:
 
- - A **name** for the customization object 
- - An url for the cape's **image** .
- - A type of **socks** for our unicorn specified by an id.
- - A specific id for the **horn** to use.
- - An id for the pair of **glasses**.
- - A type of **cape** by id.
+例えば、このアプリケーションでは、カスタマイズのリクエストを受け取った場合、カスタマイズの内容が正しいものであるかを確認する必要があります。
 
-This information should be in our request body to create a new customization that follows specific patterns.  E.g. the imageUrl should be a valid URL, the IDs for socks and horns are numeric values. 
+ - カスタムオブジェクトの **name(名前) **
+ - cape(マント)の **image **の url  
+ - id で指定された **socks(靴下)** のタイプ
+ - 使用する**horn(角)**のID
+ - **glasses(眼鏡)**のID
+ - idで指定された**cape(マント)** のタイプ.
 
-By leveraging input validation on API Gateway, you can enforce required parameters and regex patterns each parameter must adhere to. This allows you to remove boilerplate validation logic from backend implementations and focus on actual business logic and deep validation.
+これらの情報は、正しくカスタマイズを行うために、リクエスト Body に記載されている必要があります。
+例えば、imageUrl は有効なURLでなければならないし、靴下や角の ID は数値でなければなりません。
 
-## Module 3 - Optional: attack your API with SQL injection! 
+API Gateway の検証機能を活用することで、必要なパラメータと、各パラメータが遵守すべき正規表現パターンを強制することができます。これにより、バックエンドのコードから検査のためのロジックを削減でき、ビジネスロジックとより深い検証に集中することができます。
 
-If you haven't completed **Module 6: WAF**, your serverless API is currently vulnerable to SQL injection attacks. This optional module shows how you can perform the attack. 
+## オプション: APIに対してSQLインジェクションを行う
+
+もし **モジュール 6: WAF**をまだ実施していなければ、このサーバーレスアプリケーションは、SQL インジェクション攻撃の脆弱性があります。このオプションでは、攻撃を実行する方法を示します。
+
 
 <details>
-<summary><strong>Click to expand for optional step instructions </strong></summary>
-
-
-If you look at our lambda function code right now, no input validation is being performed, and with the below line specified as part of our mysql client setting (under `/src/app/dbUtils.js`):  
+<summary><strong>クリックするとオプションの手順が表示されます </strong></summary>
+Lambda 関数のコードを確認すると、入力値の検証は行われておらず、以下の行が mysql クライアント設定の一部として指定されています (`/src/app/dbUtils.js` の下にあります)。 
 
 ```
                 multipleStatements: true
 
 ```
 
-> **Note**: As a best practice you should set the `multipleStatements` option to false in your code (the nodejs mysql client actually defaults it false). However, this is not disabled by default in all programming languages/libraries, so we enabled it in our starter code for you to see the easiness of this attack.
+> **Note**: ベストプラクティスとして、コードの中で `multipleStatements` オプションを false に設定するべきです (nodejs mysql クライアントのデフォルトは false )。しかし、すべてのプログラミング言語/ライブラリでデフォルトでは無効になっているわけではないので、この攻撃の簡単さを見てもらうために、今回有効になっています。
 
-we can easily embed SQL statements in the body of the request to get executed. For example, in the body of the POST customizations/ API, try using the below:
+SQLクエリをリクエストに埋め込んで簡単に実行することができます。例えば、POSTのカスタマイズ/APIのbody を以下のようにしてみてください。
 
 <details>
-<summary><strong> If you have done module 1, use sample input here </strong></summary>
-	
+<summary><strong> モジュール1が完了済みの場合、以下を利用してください </strong></summary>
+
 ```
 {  
    "name":"Orange-themed unicorn",
@@ -57,12 +58,12 @@ we can easily embed SQL statements in the body of the request to get executed. F
    "cape":"2); INSERT INTO Socks (NAME,PRICE) VALUES ('Bad color', 10000.00"
 }
 ```
-	
+
 </details>
 
 <details>
-<summary><strong>If you have not done module 1, use sample input here </strong></summary>
-	
+<summary><strong>モジュール1を完了している場合、以下を利用してください </strong></summary>
+
 ```
 {  
    "name":"Orange-themed unicorn",
@@ -74,27 +75,27 @@ we can easily embed SQL statements in the body of the request to get executed. F
    "company":"1"
 }
 ```
-	
+
 </details>
 
 
 ![](images/3A-injection.png)
 
-Send the request using Postman. If the request succeeds, you have now just performed a SQL injection attack! 
+Postmanを使ってリクエストを送信してください。リクエストが成功した場合、SQLインジェクション攻撃を実行したことになります！
 
-If you look at the SQL injection statement we just performed, it's adding a bad value into the `Socks` table. We can verify that took effect by running the **GET /socks** API:
+先ほど実行したSQLインジェクションのクエリを見ると、**GET /socks** に対して  `Socks`テーブルに不正な値を追加していることがわかります
 
 ![](images/3A-after-injection.png)
 
 </details>
 
-## Module 3A: Create a model for your Customizations
+## モジュール 3A:  カスタマイズのためのモデルを作成する
 
-In API Gateway, a [**model**](https://docs.aws.amazon.com/apigateway/latest/developerguide/models-mappings.html#models-mappings-models) defines the data structure of a payload, using the [JSON schema draft 4](https://tools.ietf.org/html/draft-zyp-json-schema-04).
+API Gatewayでは、[**モデル**](https://docs.aws.amazon.com/apigateway/latest/developerguide/models-mappings.html#models-mappings-models)を用いてペイロードのデータ構造を[JSONスキーマドラフト4](https://tools.ietf.org/html/draft-zyp-json-schema-04)で定義することができます。
 
-When we define our model, we can ensure that the parameters we are receiving are in the format we are expecting. Furthermore, you can check them against regex expressions. A good tool to test if your regex is correct is [regexr.com](https://regexr.com/). 
+モデルを定義すると、受信するパラメータが期待通りの形式であることを確認でき、さらに、それらを正規表現と照合することもできます。また、あなたの正規表現が正しいかをテストできる [regexr.com](https://regexr.com/)というサイトもあります。
 
-For our **POST /customizations** API, we are going to use the following model:
+POST /customizations** APIでは、以下のモデルを使用します。
 
 ```json
 {
@@ -144,47 +145,54 @@ For our **POST /customizations** API, we are going to use the following model:
 }
 ```
 
-Now, follow these steps:
+以下の手順に従ってください。
 
-1. Go to API Gateway console.
-2. Click on the API **CustomizeUnicorns**
-3. Click on **Models**
-4. Click on **Create** and create a model with the following values:
+1. API Gateway コンソールへ移動する
+2. **CustomizeUnicorns** の APIをクリック
+3. **Models** をクリック
+4. **Create** をクリックし、次の値でモデルを作成します
+	
 	- Model name: `CustomizationPost`
 	- Content type: `application/json`
-1. In the model schema, use the one provided before (the *json* before this section).
-1. Once everything is filled, click on **Create model**.
+1. モデルスキーマは、先ほど掲示した *json* を使用します
+1.  **Create model**をクリックします
 	
 	![Create model](images/06_api_model.png)
 
-Once we have created our model, we need to apply it to our customizations/post method.
+モデルを作成した後、customizations/postメソッドに適用します。
 
-1. Within the API Gateway Console, click on CustomizeUnicorns, **Resources**
-1. Click under /customizations --> **POST** method
+1. API Gateway コンソールで、 CustomizeUnicornsの**Resources** をクリックします
+
+1. /customizations の **POST** メソッドをクリックします
 
 	![Customizations ](images/06_customizations.png)
-1. Click on **Method Request**
-1. Under **Request Validator**, click on the pencil to edit it. Select **Validate Body**. Then, click on the tick to confirm the change.
-1. Under **Request Body**, click on **Add model** with the following values:
+	
+1. **Method Request**をクリックします
+
+1. **Request Validator**の下の鉛筆マークをクリックします。 **Validate Body** を選択し、tick をクリックして確認します
+
+1. **Request Body** の **Add model** をクリックし、以下の値を入力します
+	
 	- Content type: `application/json`
 	- Model name: `CustomizationPost`
-1. Click to the tick to confirm.
+	
+1. tick をクリックして確認します
 
 	![Method Execution](images/06_method_execution.png)
 	
-	> On step number 2 you might have noticed that we can also validate query parameters and request headers in addition to request body. This is really useful when our application uses both at the same time and we want to have complex validations. If you want to find more information, [here](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-method-request-validation.html) is our documentation about this.
+	> リクエスト Body に加えて、クエリパラメータやリクエストヘッダも検証できることにお気づきでしょうか。これは、アプリケーションが両方を使用しており複雑な検証をしたい場合にとても便利です。より詳しい情報を知りたい場合は[このドキュメント](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-method-request-validation.html) を参照してください。
 
-	1. Now it's time to deploy and test! Go to the **Actions** menu and click on **Deploy API**. Select `dev` as the **Deployment stage** and confirm by clicking **Deploy**.
+	1. 最後にこの設定変更をデプロイします。メニューの**Actions**から**Deploy API**をクリックしてください。**デプロイステージとして `dev` を選択**し、**Deploy**をクリックしてください。
 
-## Module 3B: Test your Validation
+## Module 3B: 検証のテスト
 
-Use postman, you can try making requests to the **POST /customizations** API using invalid parameters and see the input validation kick in (if you get an unauthorize error message, could be caused by the expiration time of the Authentication token. You can easily refresh rthis token following these steps from module [01](../01-add-authentication/README.md#1E): 
+postman を使用して、不正なパラメータを **POST /customizations** API へのリクエストを行ってみて、入力の検証をテストすることができます。(もし不正なエラーメッセージが表示された場合は、認証トークンの有効期限が切れている可能性があります。[モジュール 1](../01-add-authentication/README.md#1E) の手順でこのトークンを更新することができます。
 
-### Wrong parameters = Invalid request:
+### 不正なパラメータを送信する
 
-Here are some example request bodies that fail:
+検証に失敗するリクエスト Body の例をいくつか紹介します。
 
-* Missing fields: 
+* フィールドが欠けている: 
 
 	```javascript
 	{  
@@ -195,7 +203,7 @@ Here are some example request bodies that fail:
 	}
 	```
 
-* The `imageUrl` not a valid URL: 
+* `imageUrl` のURLが無効 
 
 	```javascript
 	{  
@@ -208,7 +216,7 @@ Here are some example request bodies that fail:
 	}
 	```
 
-* The `cape ` parameter not a number (SQL injection attempt)
+* パラメータ `cape ` が数値ではない (SQL インジェクション)
 
 	```javascript
 	{  
@@ -223,19 +231,19 @@ Here are some example request bodies that fail:
 	```
 
 
-You should get a 400 Bad Request response: 
+レスポンスとして 400 Bad Requestが返ってくるはずです。
 
 ```javascript
 {"message": "Invalid request body"}
 ```
 
 
-### Correct parameters
+### 正しいパラメータを送信する
 
-Testing the **POST /customizations** API with right parameters:
+正しいパラメータで **POST /customizations** API をテストします。
 
 <details>
-<summary><strong> If you have done module 1, use sample input here </strong></summary>
+<summary><strong> モジュール1が完了済みの場合、以下を利用してください </strong></summary>
 
 ```javascript
 {  
@@ -250,7 +258,7 @@ Testing the **POST /customizations** API with right parameters:
 </details> 
 
 <details>
-<summary><strong> If you have not done module 1, use sample input here </strong></summary>
+<summary><strong> モジュール1をまだ完了していない場合、以下を利用してください </strong></summary>
 
 ```javascript
 {  
@@ -266,29 +274,29 @@ Testing the **POST /customizations** API with right parameters:
 </details> 
 
 
-The result should be:
+下記のような正しいレスポンスが返ってくるはずです。
 
 ```bash
 {"customUnicornId":<the-id-of-the-customization>}
 ```
 
-## Additional input validation options
+## 入力値のさらなるチェック
 
-As you have now seen, API Gateway input validation gives you basic features such as type checks and regex matching. In a production application, this is often not enough and you may have additional constraints on the API input. 
+これまで見てきたように、API Gatewayの入力値の検証では、型チェックや正規表現のマッチングなどの機能を利用できます。 ただし本番環境のアプリケーションでは、これだけでは十分ではないことが多く、API入力に追加の制約が必要かもしれません。
 
-To gain further protection, you should consider using the below in addition to the input validation features from API Gateway:
+さらなる保護を得るためには、API Gatewayの入力検証機能に加えて、以下の機能を利用することを検討してください。
 
-* Add an AWS WAF ACL to your API Gateway - check out [**Module 6**](../06-waf/)
-* Add further input validation logic in your lambda function code itself 
+* AWS WAF を API Gateway に追加する - [**モジュール 6**](../06-waf/)
+* Lambda 関数のコード自体にさらに入力検証ロジックを追加する
 
 
 
-## Extra credit
+## オプション: 他のメソッドへの適用
 
-There is, at least, one more method that needs to be validated. Build your own json schema for that method and apply the same steps mentioned before and you should be able to validate these methods as well!
+このアプリケーションには、入力値の検証が必要なメソッドが（少なくとも）もう一つあります。そのメソッド用に json スキーマを作成し、同じ手順で適用すれば、これらのメソッドも安全にできるはずです。時間があればトライしてみてください。
 
 <details>
-<summary><strong>Hint: In case you need some help, here is the model to be used:</strong></summary>
+<summary><strong>ヒント：行き詰った場合はこのモデルを使ってください</strong></summary>
 
 ```json
 {
@@ -309,7 +317,7 @@ There is, at least, one more method that needs to be validated. Build your own j
 ```
 </details>
 
-## Next step 
-You have now added basic input validation to your API and further reduced the risk of attackers using bad inputs to sabotage your API! 
+## 次のステップ
+これで入力値チェックの基本機能が API に追加され、不正な入力によって妨害されるリスクがさらに軽減されました！
 
-Return to the workshop [landing page](../../README.md) to pick another module.
+ワークショップの [トップページ](../../README.md) に戻り、次のモジュールを選択してください。

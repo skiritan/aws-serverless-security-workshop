@@ -1,17 +1,17 @@
-# モジュール 4: SSLを利用したDB接続の暗号化
+# Module 4: Use SSL in-transit for your DB connections
 
-現在の構成は VPC を使用しているので、トラフィックはプライベートな経路で通信が行われますが、規制やコンプライアンスの要件によっては、通信の暗号化が必要になる場合があります。この暗号化は、データベースと通信する際にデータを保護することができます。
+Although we are using VPC and traffic is private within it, some regulations or compliance requirements might require encryption in transit. This encryption secures the data when communicating with the database. 
 
-*dbUtils.js*を開き、データベース接続に新しいプロパティを追加します。 メソッド ***getDbConfig*** の箇所の resolve オブジェクト (JSON オブジェクト) の中に新しい行を追加します。
+Go to *dbUtils.js* to add a new property to your database connection. Under the method ***getDbConfig***, within the resolve object (a JSON object), add a new line to the JSON:
 
 ```
     ssl: "Amazon RDS",
 
 ```
-resolve オブジェクトは下記のようになります。
+The resolve should be like this:
 
 <details>
-<summary><strong> モジュール2(AWS Secrets Manager設定)を行ってない場合 </strong></summary><p>
+<summary><strong>If you haven't gone through AWS Secrets Manager step</strong></summary><p>
 
 ```javascript
 			resolve({
@@ -26,7 +26,7 @@ resolve オブジェクトは下記のようになります。
 </details>
 
 <details>
-<summary><strong>モジュール2(AWS Secrets Manager設定)を行った場合</strong></summary><p>
+<summary><strong>If you have gone through AWS Secrets Manager step</strong></summary><p>
 
 ```javascript
             client.getSecretValue({SecretId: secretName}, function (err, data) {
@@ -60,38 +60,38 @@ resolve オブジェクトは下記のようになります。
 ```
 </details>
 
-最後に、この変更をデプロイします。
+Finally, deploy these changes:
 
 ```bash
 cd ~/environment/aws-serverless-security-workshop/src
 aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $BUCKET --s3-prefix securityworkshop --region $REGION &&  aws cloudformation deploy --template-file packaged.yaml --stack-name CustomizeUnicorns --region $REGION --capabilities CAPABILITY_IAM --parameter-overrides InitResourceStack=Secure-Serverless
 ```
 
-デプロイが完了すると、データベース接続が SSL で暗号化されるようになります。
+Once this is done, you should be able to connect to the database using SSL.
 
-## オプション: SSL接続を必須にする
+## Ensure SSL - Optional step
 
-特定のユーザアカウントに対して、SSL接続を必須にすることもできます。例えば、MySQL のバージョンに応じて、以下のステートメントのを使用して、 `encrypted_user`ユーザアカウントに SSL 接続を要求することができます。
+You can require SSL connections for specific users accounts\. For example, you can use one of the following statements, depending on your MySQL version, to require SSL connections on the user account `encrypted_user`\.
 
-MySQL 5\.7 以降:
+For MySQL 5\.7 and later:
 
 ```
 ALTER USER 'encrypted_user'@'%' REQUIRE SSL;            
 ```
 
-MySQL 5\.6 以前:
+For MySQL 5\.6 and earlier:
 
 ```
 GRANT USAGE ON *.* TO 'encrypted_user'@'%' REQUIRE SSL;            
 ```
 
-MySQL での SSL 接続の詳細については [MySQL documentation](https://dev.mysql.com/doc/refman/5.6/en/secure-connections.html) を参照ください。
+For more information on SSL connections with MySQL, go to the [MySQL documentation](https://dev.mysql.com/doc/refman/5.6/en/secure-connections.html)\.
 
-Amazon Aurora の MySQL バージョンは、 RDS コンソールの **Configuration** タブにある **Engine version** で確認できます。
+To find the MySQL version of the Aurora database, go to the RDS console and find the **Engine version** under **Configuration** tab of the database cluster:
 
 ![](images/check-engine-version.png)
 
-## 次のステップ
-これで、データベース接続の暗号化が有効になり、安全性がさらに高まりました! 
+## Next step 
+You have now further secured your data by enabling encryption in transit for your database connection! 
 
-ワークショップの[トップページ](../../README.md) に戻り、他のモジュールを続けてください。
+Return to the workshop [landing page](../../README.md) to pick another module.

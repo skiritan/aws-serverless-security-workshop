@@ -1,12 +1,12 @@
-# Module 5: Usage Plan
+# モジュール 5: 使用量プラン
 
-You can leverage Usage Plans with Amazon API Gateway to set limits on request rate for consumers of your API to protect it from being abused by a particular misbehaving client. 
+Amazon API Gateway の使用量プランを活用して、API のリクエストレートに制限を設けることで、特定の悪質なクライアントに悪用されないようにすることができます。
 
-To tally the number of requests based on the caller, API Gateway uses API Keys to keep track of different consumers for your API. In our use case, requests coming from different companies can be calculated separately. 
+APIの呼出し元に基づいてリクエスト数を集計するために、API Gateway は API キーを使用して利用者を追跡します。これは、例えば異なる企業からのリクエストを別々に計算するケースにも利用できます。
 
-## Module 5A: Create an API Gateway usage plan 
-1. In the API Gateway console, go to **Usage Plans** tab, and click **Create** 
-1. Fill in the details for the usage plan 
+## モジュール 5A: API Gateway 使用量プランの作成
+1. API Gateway コンソールで、**Usage Plans** タブに移動し **Create**をクリックします
+1. 使用量プランの詳細として以下を入力します
 	
 	* **Name**: ```Basic```
 	* **Description** : ```Basic usage plan for Unicorn customization partners```
@@ -17,62 +17,61 @@ To tally the number of requests based on the caller, API Gateway uses API Keys t
 
 	![Create Usage Plan screenshot](images/create-usage-plan.png)
 	
-	Click **Next**
+	**Next**をクリックします。
 	
-1. Associate the API we created previously with the usage plan. Pick `dev` stage. 
+1. 作成した利用量プランに関連付ける先として、`dev`ステージを選択します
 
 	![add stage to Usage plan](images/add-apig-stage.png)
 	
-	> The warning sign is expected because we haven't yet configured the API to require API Keys. This will be done in a later steps.
+	> 警告マークは、APIキーを必要とするようにまだ設定されていないために表示されます。これは後のステップで行います。
 
-1. Click the checkmark to confirm. Then click **Next**
+1. checkmarkをクリックして   **Next**をクリックします。
 
 	![add stage to Usage plan](images/5A-add-stage-to-plan.png)
 
 
-1. We currently don't have any API keys set up. 	In this step, click **Create API Key and add to Usage Plan** to create an API key for the partner company 
+1. 現在、APIキーを利用するようにまだ設定していません。 ***Create API Key and add to Usage Plan**をクリックして、パートナー企業の APIキー を作成します。
 
 	<details>
-	<summary><strong> If you have not done module 1, expand for instructions here </strong></summary>
+	<summary><strong> モジュール1をまだ完了していない場合、以下を実行してください</strong></summary>
 
-	* For Name, pick any name e.g.  `cherry company`. 
-	* For API Key, select **Auto Generate**
-	* Click **Save**
+	* Name  `cherry company`
+	* API Key **Auto Generate**を選択
+	* **Save**をクリック
 
 
 	<img src="images/5A-auto-generate-API-key.png" />
 	</details> 
 	
 	<details>
-	<summary><strong> If you have done module 1, expand for instructions here </strong></summary>
+	<summary><strong>モジュール1を完了している場合、以下を実行してください </strong></summary>
 	
-	For our application, we are going to reuse the value of the ClientID of the customer as the value for the API Key, to keep down the number of random strings that customers have to remember. 
+	今回のアプリケーションでは、ランダムな文字列を顧客が覚えなくてすむように、顧客のClientIDの値をAPIキーの値として利用します
 	
-	* For Name, use the company name you created in **Module 1: Auth**. 
-	* For API Key, select **Custom** so we can import the value
-	* In the inputbox that comes up, use the same value as the ClientID of the company (if you forgot it, you can retrieve it from the Cognito console and look under **App clients** tab
-	* Click **Save**
+	* Name: **モジュール 1: 認証**で作成した会社名. 
+	* API Key:, 値を入力するために **Custom**を選択
+	* 表示された入力ボックスに、会社の ClientID と同じ値を入力（忘れてしまった場合は、Cognitoコンソールから取得し、**App clients**タブを確認してください）
+	* **Save**をクリックします
 	
 	![](images/5A-create-API-key.png)
-
+	
 	</details> 
 
 
-	
-1. After the API key has been created, click **Done**. 
+1. APIキーが作成されたら、**Done**をクリックします。
 
 	![](images/5A-API-key-created.png)
 	
-## Module 5B: Update API Gateway to enforce API keys
+## モジュール 5B: API Gateway を更新して APIキー を強制する
 
-Now, we need to modify our API gateway so requests must have an API key present.
+次に、API キーを利用したリクエストに対応するために、API Gateway を変更していきます。
 
-	
+
 <details>
-<summary><strong> If you have done module 1, expand for instructions here </strong></summary>
+<summary><strong> モジュール1をまだ完了していない場合、以下を実行してください </strong></summary>
 
 
-1. In the API swagger definition in `template.yaml`, add the below lines to add an additional type of AWS security: 
+1. `template.yaml`の API Swagger の定義で、以下の行を追加します。
 
 	```yaml
 		      ApiKey:
@@ -83,28 +82,28 @@ Now, we need to modify our API gateway so requests must have an API key present.
 	
 	<img src="images/5B-add-security-def.png"/>
 
-1. Next, for the APIs in the Swagger template for customizing unicorns and listing customization options (leave out the `/partners` APIs for now), add the below 
+1. 次に、ユニコーンをカスタマイズしたり、カスタマイズオプションを一覧表示するための Swagger テンプレートのAPI に、以下を追記していきます。
 
 	```yaml
 	         		- ApiKey: []
 	```
-	to the `security` section in each API:
+	以下のように、**それぞれの API の** `security` セクションに追記します。 ( `/partners` API は今はそのままにしておきます)
 
 	<img src="images/5B-add-API-key-to-swagger.png"/>
 
 </details>
 
 <details>
-<summary><strong> If you have not done module 1, expand for instructions here </strong></summary>
+<summary><strong> モジュール1を完了している場合、以下を実行してください </strong></summary>
 
 
-1. In the API swagger definition in `template.yaml`, find the line:
+1. `template.yaml`の API Swagger の定義で、以下の行を探します
 
 	```
 	### TODO: add authorizer
 	```
 	
-	add the following lines below that: 
+	その下に次の行を追加します
 
 	```yaml
 	        securityDefinitions:
@@ -114,13 +113,13 @@ Now, we need to modify our API gateway so requests must have an API key present.
 	            in: header
 	```
 
-	See screeenshot: 
+	以下のようになります
 	<img src="images/5B-add-security-def-no-module-1.png"/>
 	
-	&#9888; **Caution: Ensure the `securityDefinitions` section you pasted is at the same indentation level as `info` and `paths`** &#9888;
+	&#9888; **Caution: 貼り付けた `securityDefinitions` セクションが `info` や `paths` と同じインデントレベルであることを確認してください**。 &#9888;
 
 
-1. In the `paths` section of the Swagger template, change the occurrence of each of the below
+1. Swagger テンプレートの `paths` セクションで、以下の**それぞれの記述**を
 	
 	```yaml
 	#              security:
@@ -128,135 +127,134 @@ Now, we need to modify our API gateway so requests must have an API key present.
 	
 	```
 
-	into
+	以下に**すべて置き換えます**
 	
 	```yaml
 	              security:
 	                - ApiKey: []
 	```
 	
-	See screeenshot: 
+	以下のようになります。
 	<img src="images/5D-api-source-authorizer-swagger-no-module-1.png" width="80%" />
 
-	&#9888; **Caution: Ensure all 9 APIs are updated** &#9888;
+	&#9888; **Caution: 全部で9個の API を変更したことを確認してください** &#9888;
 	
+
 </details>
 
-Now, deploy the changes and verify: 
+設定が終わったので、変更をデプロイして動作を確認していきます。
 
-1. Validate the template in the terminal:
+1. ターミナルでテンプレートを検証します。
 
 	```
 	sam validate -t template.yaml
 	```
 
-1.  Deploy the updates:
+1.  変更をデプロイします。
 
 	```
 	 aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $BUCKET --s3-prefix securityworkshop --region $REGION &&  aws cloudformation  deploy --template-file packaged.yaml --stack-name CustomizeUnicorns --region $REGION --parameter-overrides InitResourceStack=Secure-Serverless --capabilities CAPABILITY_IAM
 	```
 
-1. Once the deployment completes, you can go the [API Gateway console](https://console.aws.amazon.com/apigateway/home), navigate to the **CustomizeUnicorns API** -> **Resources** --> Pick an method --> click on **Method Request**. 
+1. デプロイが完了したら[API Gateway コンソール](https://console.aws.amazon.com/apigateway/home)に移動し、**CustomizeUnicorns API** の **Resources** からメソッドを選択し、**Method Request**をクリックします。 
 
-	You should now see the **API Key Required** field set to `true`
+	**API Key Required** が`true` に設定されていることを確認します
 
 	<img src="images/5B-confirm-usage-plan-requirement.png"/>
 
 
-## Module 5C: Test request with API keys
+## モジュール 5C: 動作確認
 
-1. Go back to Postman. Now the API is enforcing API keys, the request will fail if you don't include the API key header. 
+1. Postmanを使ってテストします。API が APIキーを強制するようになったので、API キーのヘッダーを含めないとリクエストは失敗します。
 
-	Try sending an request using Postman like you did before. You should see the request fail with a **403 Forbidden** status code and a `{"message": "Forbidden"}` response. 
-	
-	> If the response is **401 Unauthorized** and if you have completed module 1, most likely your access token is expired. Use Postman to request a new access token and try again.
+  以前と同じように Postman を使ってリクエストを送信してみてください。**403 Forbidden** というステータスコードと `{{"message". "Forbidden"}` のレスポンスが返ってくるはずです。
 
-1. You can add the API key request header by going to the **Header** tab, and put in 
-	* `x-api-key` for the header key
-	* The value for the API Key that we added to the usage plan in module 5B:
-		* If you have done module 1: this should be same as the Cognito app Client ID
-		* If you have not done module 1: you can find the auto-generated API key value by going to the **API Keys** tab in the API gateway console --> click on the API key you created in module 5B --> click **Show** next to **API Key**	
+  > モジュール1を完了しており、**401 Unauthorized** が返ってくる場合は、アクセストークンの有効期限が切れている可能性が高いです。Postmanを使って新しいアクセストークンを要求して、もう一度試してみてください。
+
+1. API キー のリクエストヘッダーを追加するには、**Header** タブに移動して 
+	* header keyに`x-api-key` を入力します
+	* モジュール5Bで使用量プランに追加したAPIキーの値を入力します:
+		* モジュール1完了の場合: Cognito の app Client ID と同様
+		* モジュール1未完了の場合:  API gateway コンソールの **API Keys** タブ から、モジュール5Bで作成した APIキーを選択し、**API Key** の隣の **Show**をクリックして確認できます	
 
 
 			<img src="images/5C-find-api-key.png" /> 
-
-	You should now see the request go through
+	
+	これでリクエストが正常に処理できるよになります
 	
 	<img src="images/5C-explicit-API-key.png" /> 
 
 
-## Module 5D (Optional): Use the Lambda authorizer to provide the API key
+## オプションモジュール 5D : Lambda オーソライザーで API キーを利用する
 
 
-&#9888; **Caution: This optional module assumes you have completed Module 1** &#9888;
+&#9888; **Caution: このオプションは、モジュール1を完了していることを前提としています** &#9888;
 
-If you have already completed module 1: to make the API consumer's life easier, instead of forcing them to add a separate `x-api-key` header to the request they are making, we can make API Gateway take the API Key from the lambda authorizer. Read more about the two sources of API keys supported by API gateway [here](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-key-source.html)
+モジュール 1: を完了している場合は、API 利用者の利便性のために、リクエストに `x-api-key` ヘッダーを追加することを強制するのではなく、API gateway が Lambda オーサライザーから API キーを取得するようにすることができます。API gateway がサポートする APIキー の2つのソースについての詳細は[こちら](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-key-source.html)を確認してください
 
-To make this work:
-
-1. In the API swagger definition in template.yaml, add the below lines
+1. template.yaml のAPI swagger 定義で、以下の行を追加します。
 	
 	```
 	x-amazon-apigateway-api-key-source: AUTHORIZER
 	```
+
+	 `securityDefinitions` や `paths` フィールドと同じインデントレベルにします。
 	
-  	to the same level as the `securityDefinitions` or `paths` field: 
-  	
 	<img src="images/5D-api-source-authorizer-swagger.png" /> 
-	
-1. We also need to make the Lambda authorizer return the API Key as part of the auth response. To do so, go to `authorizer/index.js`, find the following line in the code, and uncomment the second line:  
+
+1. また、Lambda オーサライザーが authレスポンスの一部として APIキー を返すようにする必要があります。これを行うには、`authorizer/index.js`にアクセスし、コードの中で以下の行を見つけ、2行目のコメントを外します。 
 
                         // Uncomment here to pass on the client ID as the api key in the auth response
                         // authResponse.usageIdentifierKey = payload["client_id"];
 
-1. Validate the SAM template:
+1. テンプレートを検証します。
 
 	```
 	sam validate -t template.yaml
 	```
 
-1.  Deploy the updates:
+1.  変更をでプロします。
 
 	```
 	 aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $BUCKET --s3-prefix securityworkshop --region $REGION &&  aws cloudformation  deploy --template-file packaged.yaml --stack-name CustomizeUnicorns --region $REGION --parameter-overrides InitResourceStack=Secure-Serverless --capabilities CAPABILITY_IAM
 	```
 
-1. Once the deployment finishes, test making API requests again with postman. You should now be able to remove the `x-api-key` request header and the request should be able to succeed. 
+1. デプロイが完了したら、postman を使って再度 API リクエストを行うテストを行います。 `x-api-key` リクエストヘッダがない場合でもリクエストが成功するはずです。
 
 
 
-## Module 5E (Optional): Test throttling behavior with postman
+## オプションモジュール 5E : postmanを使ったスロットリングの動作テスト
 
-&#9888; **Caution: This optional module assumes you have completed Module 1 and Module 5D! If you have not done those two, you would need to add the x-api-key header to each of the API in the collection first!** &#9888;
+&#9888; **Caution: このオプションモジュールは、モジュール1と、上記のオプションモジュール5Dを完了したことを前提としています。 この2つを完了していない場合、コレクションの各APIにx-api-keyヘッダーを追加する必要があります。** &#9888;
 
-You can use postman to send multiple API requests in sequence. 
+postmanを使用して、複数のAPIリクエストを順番に送信することができます。
 
-1. In postman, click on **Runner**
+1. postmanで**Runner**をクリックします
 
-1. Pick the `List customization options` folder to run
+1. `List customization options` フォルダーを選択します
 
-1. Select the `dev` environment and set runner to run 10 iterations
+1. Environment に `dev` を選択し、 iterationsに 10 を入力します
 
 	<img src="images/5E-runner-config.png" width="50%">
 
-1. In the test result, you should some requests getting throttled and receiving a 429 response:
+1. 以下のテスト結果では、いくつかのリクエストがスロットルされて429のレスポンスを受信しています。
 
 	<img src="images/5E-postman-throttle.png" width="90%">
 
 
-## Extra credit
+## 補足
 
-If you want extra credit (karma points), here are some ideas:
+時間があれば、以下も試してみてください。
 
-* Try viewing/downloading the usage data for a given client. 
+* 特定のクライアントの使用状況データを表示/ダウンロードしてみてください。
 	
-	> **Hint**: See [here](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-usage-plans-with-console.html#api-gateway-usage-plan-manage-usage) on some documentation 
+	> **Hint**: [このドキュメント](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-usage-plans-with-console.html#api-gateway-usage-plan-manage-usage) を参照してください
 
-* Try configure different throttling thresholds for different API methods
+* API メソッドごとに異なるスロットリングしきい値を設定してみてください。
 
-	> **Hint**: See [here](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html#apig-request-throttling-stage-and-method-level-limits) on some documentation 
+	> **Hint**: [このドキュメント](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html#apig-request-throttling-stage-and-method-level-limits) を参照してください
 
-## Next Step 
-You have now configured throttling for your API consumers using API Gateway Usage Plans! 
+## 次のステップ
+これで、API Gateway 使用量プランを使用して API 利用者のスロットリングを設定することができました。
 
-Return to the workshop [landing page](../../README.md) to pick another module.
+ワークショップの [トップページ](../../README.md) に戻り、次のモジュールを選択してください。

@@ -1,54 +1,57 @@
-# Module 2: Securely storing our database credentials with AWS Secrets Manager
+# モジュール 2: AWS Secrets Managerでデータベースのクレデンシャルを安全に保存する
 
-Hardcoding database's credentials and connection information is not a best practice. Not only from a security point of view but also operational. Any data breach within your code could expose these secrets and expose your business critical data. You also risk accidentally making your credentials public if you check in your code into a public repo or a private repo that can be accessed by a wide range of people. 
+データベースの資格情報や接続情報をハードコーディングすることは、ベストプラクティスではありません。セキュリティの観点からだけでなく、運用上の問題もあります。コード内に機密情報を置くことは、ビジネス上の重要なデータを漏洩させる可能性があります。また、幅広い人がアクセスできる公開リポジトリやプライベートリポジトリにコードをチェックインした場合、誤って情報を公開してしまうリスクもあります。
 
-From an operational perspective, when deploying your code between different stages in your CI/CD pipelines, hardcoded values make it difficult to automate and might require manual intervention slowing down your development process.
+また運用の観点では、CI/CD パイプラインのステージ間でコードをデプロイする場合、ハードコードされた値は手動作業が必要となるケースが多く、開発プロセスを遅くしてしまう可能性もあります。
 
-During this section we will use AWS Secrets Manager to handle our database credentials for us. Besides keeping your database safe even if people get access to read your code, AWS Secrets Manager also integrates with RDS and will automatically handle password rotations. 
+このセクションでは、AWS Secrets Manager を使ってデータベースの認証情報を処理していきます。AWS Secrets Managerは、コードを読まれたとしてもデータベースを安全に保つことも、RDS と統合してパスワードを自動的にローテーション処理することもできます。
 
-> Once you decide to do this module, you won't be able to use Cloud9 Local testing as we haven't configured the correct permissions to test locally this functionality.
+> このモジュールを実行した場合、このアプリケーションでローカルテストするための権限が無効になるため、Cloud9 環境でのローカル テストができなくなります。
 
-## Module 2A: Create a secret in AWS Secrets Manager
+## モジュール 2A: Secrets Manager で シークレットを作成する
 
-First thing we need to do is create a secret in Secrets Manager.
- 
-1. Go to your AWS Console to AWS Secrets Manager.
+それでは、Secrets Managerで シークレットを設定していきます。
+
+1. AWS コンソールから AWS Secrets Manager に移動します
 	![AWS Secrets Manager Console](images/00-secrets-manager.png)
-1. Click on *Store a new secret*.
-2. Select ***Credentials for RDS database*** type of secret. Fill it with these values:
+1. *Store a new secret*をクリックします
+2. ***Credentials for RDS database*** を選択し、以下の値を入力します
+	
 	- Username: `admin`
 	- Password: `Corp123!`
 	- Select the encryption key: `DefaultEncryptionKey`.
 	![AWS Secrets Manager - Secret](images/01-store-new-secret.png)
-	- Select your Aurora cluster (starts with `secure-serverless-aurora`)
-
+- Select your Aurora cluster ( `secure-serverless-aurora`で始まるものを選択)
+	
 		<img src="images/02-secret-select-db.png" width="60%"/>
 	
-1. Click on *Next* and continue fill the wizard with the following values.
+1. *Next*をクリックし、以下の値を入力します
+	
 	- Secret name: `secure-serverless-db-secret`
-	- Description: Use an optional description here.
+	- Description: DB access for our Aurora.
 	![Secret name](images/03-secret-name.png)
-1. Again, click on *Next* and configure your rotation.
-	- Click on `Enable Rotation`
-	- Select `30 Days` as the rotation interval.
-	- Choose **Create a new Lambda Function to perform rotation**
-	- Give the lambda function a name, e.g. `aurora-rotation`
-	- Select **Use this secret** 
+1. *Next*をクリックし、ローテーションを設定します
+	
+	- `Enable Rotation`をクリックします
+	- Select  as the rotation intervalとして`30 Days`を選択
+	- **Create a new Lambda Function to perform rotation**を選択
+	- Lambda 関数の名前を設定`aurora-rotation`
+	- **Use this secret** を選択
 	![Rotation](images/04-rotation.png)
-1. Then, click *Next* and, if you want, review the example code. During the next sections we will modify our code to use Secrets Manager and this code will be used as an example.
-1. Finally, click *Store*.
+1. *Next*をクリックし、 サンプルコードを確認してください。次のセクションで、Secrets Manager を使用するようにコードを修正するので、このコードを例として使用します。
+1. 最後に *Store* をクリックします
 
-> Be careful if you are using Firefox or Chrome extensions when performing these steps! Some extensions like *LastPass* might change the values entered before.
+> FirefoxやChromeの拡張機能を使用している場合は注意してください。*LastPass*のような拡張機能の中には、以前に入力した値を変更してしまうものがあります。
 > 
-> You can review and verify the values after you create the secret by clicking **Retrieve secret value**
+> シークレットを作成した後、 **Retrieve secret value**  をクリックして値を確認することができます。
 > 
 > ![](images/2A-verify-secret.png)
 
-## Module 2B: Add permission to Lambda function to read from secrets manager
+## モジュール 2B: Lambda 関数に secrets manager の読取り権限を与える
 
-We need to modify the execution policy on the lambda functions, so they areallowed to make API calls to Secrets Manager. 
+ Lambda 関数の実行ポリシーを変更して、Secrets Manager への API 呼び出しを許可します。
 
-In `src/template.yaml`, look for the block below that defines policies for Secrets Manager (**You should find a total 3 occurrences**) and uncomment them. 
+`src/template.yaml`の以下のブロックで、Secrets Manager のポリシーを定義しているブロックを探して、コメントを外してください。 (**全部で 3 箇所あります。すべてコメントを外して下さい**　)
 
 ```yaml
 #        - Version: '2012-10-17'
@@ -61,9 +64,9 @@ In `src/template.yaml`, look for the block below that defines policies for Secre
 ```
 
 
-&#9888; **Note: ENSURE YOU REPLACE ALL 3 OCCURRENCES**!  &#9888;  
+&#9888; **注意: 必ず３箇所を修正したことを確認してください！**  &#9888;  
 
-Also, note that in the **Globals** section we are referencing the name of the secret
+次に、**Globals**のセクションの中で、*SECRET_NAME* という環境変数を指定していることを確認してください。
 
 ```
 Globals:
@@ -75,11 +78,12 @@ Globals:
 
 ```
 
-## Module 2C: Modify your code to use the secret
+## モジュール 2C: シークレットを使用するようにコードを修正する
 
-Once you have created the secret, you will have to modify the application code to use Secrets Manager. Go to the file `src/app/dbUtils.js`. Here is where the connection information is stored.
+シークレットを作成したら、Secrets Managerを使用するようにアプリケーションコードを修正していきます。ファイル `src/app/dbUtils.js` に移動します。ここには接続情報が含まれています。
 
-At the beginning of the file, add the following lines to create the required variables to use AWS Secrets Manager. You can add them just after the line `const PARTNER_COMPANY_TABLE = "Companies";`.
+ファイルの先頭に、AWS Secrets Manager を使用するための変数を作成します。
+`const PARTNER_COMPANY_TABLE = "Companies";`の行の直後に、以下を追加します。
 
 ```javascript
 // Load the AWS SDK
@@ -91,10 +95,10 @@ var secret;
 const client = new AWS.SecretsManager();
 ```
 
-Taking a look at this code you might notice that we are using Environment Variables. To see where these variables are defined, go to `template.yaml` and check on *Global*. These have been defined from the beginning. Verify that they follow the previous step work.
+このコードを見ると、環境変数を使用していることに気づくかもしれません。これは先程のステップで確認した`template.yaml` で *Global* セクションで定義されています。
 
-Now, it's time to modify how we set the configuration of our connection to the database. The method that does this is called **getDbConfig** within *dbUtils.js*.
-This method returns a [promise](http://google.com) resolving with the JSON parameters.
+それでは、データベースへの接続方法を変更してみましょう。これを行うメソッドは、*dbUtils.js*内の**getDbConfig**と呼ばれています。
+このメソッドは、JSONで以下のような値を返します。
 
 ```javascript
             resolve({
@@ -107,7 +111,7 @@ This method returns a [promise](http://google.com) resolving with the JSON param
 
 ```
 
- Replace the lines above with the following code:
+上記の行を以下のコードに置き換えてください。
 
 ```javascript
             client.getSecretValue({SecretId: secretName}, function (err, data) {
@@ -139,37 +143,38 @@ This method returns a [promise](http://google.com) resolving with the JSON param
             });
 
 ```
-Here is an example of how the method should look after the changes.
+変更後は下記のようになります。
 
 ![dbConfig.jsChanged](images/06-dbConfig-changed.png)
 
-If you read the code closely, you will see that is gathering the secrets from AWS Secrets Manager service and use them to resolve the promise with the values returned by the service.
 
-## Module 2D: Deploy and test
 
-Now it's time to deploy again and test the application:
+もし時間があればこのコードをゆっくり眺めて、AWS Secrets Manager からシークレットを取得して、そのシークレットの値を返していることを確認してください。
 
-1. Validate the template:
+## モジュール 2D: デプロイとテスト
+
+それでは、この変更をデプロイしてアプリケーションをテストしていきます。
+
+1. 以下を実行してテンプレートを検証します。
 
 	```
 	sam validate -t template.yaml
 	```
 	
-1.  Deploy the updates by running:
+1.  以下を実行して変更をデプロイします。
 
 	```
 	 aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $BUCKET --s3-prefix securityworkshop --region $REGION &&  aws cloudformation deploy --template-file packaged.yaml --stack-name CustomizeUnicorns --region $REGION --capabilities CAPABILITY_IAM --parameter-overrides InitResourceStack=Secure-Serverless
 	```
 
+1. postmanで API をテストします。API 内の `/socks`, `/horns`... などで動作が正常に行われることを確認してください。
 
-1. Test the API using postman. You can test it with whatever method in the API such as `/socks`, `/horns`...
+## 補足
 
-## Extra credit
+**シークレットのキャッシュ**
+現在のコードでは、Lambda 関数が呼び出されるたびに Secrets Manager を呼び出してシークレットを取得しています。これは、API が頻繁に呼び出されている場合、Secrets Manager への API コールを大量に発生させる可能性があります。
+Secrets Manager へのトラフィックを減らすために、[実行コンテキストの再利用](https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/)を活用し、シークレットの値をキャッシュすることもできます。
 
-**Cache the secrets:**
-The code currently makes a call to Secrets Manager to retrieve the secret every time the Lambda function gets invoked. This may generate lots of API calls to Secrets Manager when your API is being invoked frequently. 
-To reduce network traffic to Secrets Manager, you can take advantage of [Execution Context reuse](https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/) and cache the secret value. 
+## 次のステップ
 
-## Next Step 
-
-Return to the workshop [landing page](../../README.md) to pick another module.
+ワークショップの[トップページ](../../README.md) に戻り、他のモジュールを続けてください。
