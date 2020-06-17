@@ -157,7 +157,7 @@ If you are using AWS Event Engine, an AWS CloudFormation stack should be automat
    
    ![](images/0B-clone-repo.png)
 
-:bulb:**Tip:**  このワークショップを通して、 AWS Cloud9 IDE を開いたままにしてください。多くの作業で使用します。
+	:bulb:**Tip:**  このワークショップを通して、 AWS Cloud9 IDE を開いたままにしてください。多くの作業で使用します。
 
 1.  Cloud9 で新しいファイルを作成します。
 
