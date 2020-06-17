@@ -81,7 +81,7 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 1. WAF Classicコンソールの **Create web ACL** をクリックします。
 
 	![](images/classifc-waf-opening.png)
-	
+
 1. ACL作成ウィザードのステップ1で、以下を入力します。
 
 	* **Web ACL Name**: `ProtectUnicorn`
@@ -117,55 +117,54 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 	* ここでは、リクエストをより検査するために複数のルールを追加します
 	*  **Filter settings**で以下の４つのフィルターを追加します
 
-	<table>
-	<tr>
-	  <th></th>
-	  <th>Part of the request to filter on</th>
-	  <th>Transformation</th>
-	</tr>
-	<tr>
-	  <td>1</td>
-	  <td>Body</td>
-	  <td>None</td>
-	</tr>
-	<tr>
-	  <td>2</td>
-	  <td>Body</td>
-	  <td>URL decode</td>
-	</tr>
-	<tr>
-	  <td>3</td>
-	  <td>URI</td>
-	  <td>URL decode</td>
-	</tr>
-	<tr>
-	  <td>4</td>
-	  <td>Query string</td>
-	  <td>URL decode</td>
-	</tr>
-	</table>
+        <table>
+        <tr>
+          <th></th>
+          <th>Part of the request to filter on</th>
+          <th>Transformation</th>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>Body</td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Body</td>
+          <td>URL decode</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>URI</td>
+          <td>URL decode</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Query string</td>
+          <td>URL decode</td>
+        </tr>
+        </table>
 
 	* **Create**をクリックします。
 
-	![screenshot](images/sql-condition.png)
+		![screenshot](images/sql-condition.png)
 
 1. **Next** をクリックして**Create rules** ページに進みます。
 
 
 ### モジュール 6C: WAF ルールの作成
 
-
 1.   **ルール**は１つまたは複数の**条件**で構成することができます。
 まず、リクエストのボディサイズの条件を使ってルールを作成してみましょう。
 
 	* **Create Rule** をクリック
-	* 名前として `LargeBodyMatchRule`を設定します
-	* **Rule type**は`Regular rule`を指定します
+	* 名前として `LargeBodyMatchRule` を設定します
+	* **Rule type**は `Regular rule` を指定します
 	* Add conditions セクションで下記を選択します
 		* `does`
 		* `match at least one of the filters in the size constraint condition `
 		*`LargeBodyMatch`  -- さきほど作成したラージリクエストボディ制限の条件 
-	
+
 	* **Create** をクリックします
 	
 	![screenshot](images/large-body-rule.png)
@@ -188,12 +187,11 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 	* **Create Rule** をクリックします
 	* 名前として  `RequestFloodRule` を設定します
 	* **Rule type**は`Rate-based rule`を指定します
-	
-	   **Rate limit**に`2000` を設定します
-*  **Create** をクリックします
-	
+	**Rate limit**に`2000` を設定します
+	*  **Create** をクリックします
+
 	![screenshot](images/request-flood-rule.png)
-	
+
 1. これで、以下のような3つのルールが表示されるはずです。防御を行うためにActionが`Block`になっていることを確認してください。
 
 	また、**Default action** は `Allow all requests that don't match any rules`を選択してください
