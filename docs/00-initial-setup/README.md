@@ -135,14 +135,13 @@ If you are using AWS Event Engine, an AWS CloudFormation stack should be automat
 	<img src="images/0B-cloud9-environments.png" width="80%" />
 
 1. *Secure-Serverless-Cloud9* 環境の ***Open IDE***  をクリックします
-	（Cloud9 環境が表示されない場合は、展開したリージョンにいるか確認ください） 
-	
-![Cloud9 Open IDE](images/0C-open-ide.png)
+
+	![Cloud9 Open IDE](images/0C-open-ide.png)
 	
 	Cloud9 を開けない場合は、以下を使用していることを確認してください。 
-	
+	* Cloud9 環境が表示されない場合：展開したリージョンを表示しているか
 	* **Chrome** または **Firefox** のブラウザ
-* サードパーティの Cookie が有効になっていることを確認　[**シューティングガイド**](https://docs.aws.amazon.com/cloud9/latest/user-guide/troubleshooting.html#troubleshooting-env-loading)
+	* サードパーティの Cookie が有効になっていることを確認　[**シューティングガイド**](https://docs.aws.amazon.com/cloud9/latest/user-guide/troubleshooting.html#troubleshooting-env-loading)
 	
 1. 次のように、統合開発環境（IDE）環境が表示されます。AWS Cloud9 は、ブラウザのみでコードを記述、実行、デバッグできるクラウドベースの IDE です。また、ターミナルウィンドウでシェルコマンドも実行できます。 
 
@@ -468,8 +467,8 @@ Cloud9 のサイドバーでこれらのファイルを探して、コードを�
 
 	出力例:
 	```
-$ aws cloudformation describe-stacks --region $REGION --stack-name CustomizeUnicorns --query "Stacks[0].Outputs[0].OutputValue" --output text
-https://rs86gmk5bf.execute-api.us-west-2.amazonaws.com/dev/
+	$ aws cloudformation describe-stacks --region $REGION --stack-name CustomizeUnicorns --query "Stacks[0].Outputs[0].OutputValue" --output text
+	https://rs86gmk5bf.execute-api.us-west-2.amazonaws.com/dev/
 	```
 
 	 または [CloudFormation コンソール](https://console.aws.amazon.com/cloudformation/home)で、`CustomizeUnicorns` スタックの **出力** タブでも確認できます。
