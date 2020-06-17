@@ -15,7 +15,7 @@ API へのアクセスを信頼できるパートナー企業のみに制限す�
 このワークショップでは、OAuth クライアント認証を利用します。API Key を使用する場合と比較して、OAuth クライアント認証情報フローを使用すると、次のことが可能になります。
 
 * 異なる認証 [**スコープ**](https://www.oauth.com/oauth2-servers/scope/) を簡単に定義でき、異なる種類のクライアントが異なるAPIやリソースにアクセスさせやすい。
-* 将来の拡張として、プログラムによるアクセスではなく、Wild Rydes が管理する Web UI を介して API に接続するケースがあるかもしれません。または、サードパーティーの企業が乗客/ユニコーンに代わってリクエストを行うカスタムアプリを構築できるようにしたいケースもあります ( [別ワークショップの例](https://github.com/aws-samples/aws-serverless-workshops/tree/master/WebApplication/5_OAuth) ). OAuth アクセストークンで認証する API を設計することで、これらの将来的な拡張を柔軟に対応できます。  
+* 将来の拡張として、プログラムによるアクセスではなく、Wild Rydes が管理する Web UI を介して API に接続するケースがあるかもしれません。または、サードパーティーの企業が顧客に代わってリクエストを行うカスタムアプリを構築できるようにしたいケースもあります ( [別ワークショップの例](https://github.com/aws-samples/aws-serverless-workshops/tree/master/WebApplication/5_OAuth) ). OAuth アクセストークンで認証する API を設計することで、これらの将来的な拡張を柔軟に対応できます。  
 
 このモジュールでは、**Amazon Cognito** を **認証サーバー**として使用し、API Gateway 用の [**Lambda オーソライザー**](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html) を活用することで、トークンを検査しアクセスポリシーを割り当てます。このモジュールを実施した後のアーキテクチャは次のようになります。   
 
@@ -86,8 +86,8 @@ Amazon Cognito ユーザープールでは、カスタムリソースサーバ�
 1. カスタムリソースサーバーの識別子として `WildRydes` を入力します。
 
 1. スコープのセクションで、２つの新しいスコープを宣言します：
-	* `CustomizeUnicorn` - パートナー企業によって利用されます。
-	* `ManagePartners` - 社内の管理者やアプリが、パートナー企業を登録するために使用します。
+	* Name: `CustomizeUnicorn`  Description: used by 3rd party partners to customize unicorns 
+	* Name: `ManagePartners`  Description:  used by internal apps/admin to register partner companies 
 	
 	**変更の保存** をクリックします。
 	
@@ -97,7 +97,7 @@ Amazon Cognito ユーザープールでは、カスタムリソースサーバ�
 
 ユニコーンをカスタマイズするためにサインアップする新しい会社には、リクエストで使用できるクライアント認証情報（クライアント ID とクライアントシークレット）のセットを発行する必要があります。つまり、これらのクライアント認証情報を作成して配布するプロセスが必要になります。
 
-実際には、この作業を Web 開発者ポータル行うことができます。パートナー企業は、何らかのユーザー名とパスワードを使用して Web ポータルにサインインし、クライアント認証情報を要求できるようにすることが可能です。ただし、このワークショップでは時間が限られているので、**POST /partner** API を作成して、Wild Rydes の管理者がパートナー企業のサインアップのために使用できるようします。
+実際には、この作業を Web 開発者ポータルで行うことができます。パートナー企業は、何らかのユーザー名とパスワードを使用して Web ポータルにサインインし、クライアント認証情報を要求できるようにすることが可能です。ただし、このワークショップでは時間が限られているので、**POST /partner** API を作成して、Wild Rydes の管理者がパートナー企業のサインアップのために使用できるようします。
 
 それでは、`WildRydes/ManagePartners` の OAuth スコープを持つクライアント管理者用の認証情報を作成して、 パートナー企業のサインアップを開始しましょう！
 
@@ -343,8 +343,8 @@ API Gateway のための [**Lambda オーソライザー**](https://docs.aws.ama
 
 モジュール 1C で作成した管理クライアントの認証情報を使用して、PostMan で認証されたリクエストを行います
 
-1. Postman で、**Manage Partner** フォルダを右クリックして、 **edit** をクリックします。
-1. ポップアップ表示された Edit Folder ウィンドウで、**Authorization** タブから **TYPE** を `OAuth 2.0` に変更し、 **Get New Access Token** をクリックします。
+1. Postman で、左ペインの Customize_unicornsフォルダを展開し、**Manage Partner** フォルダをクリックします。
+1. **Authorization** タブから **TYPE** を `OAuth 2.0` に変更し、 **Get New Access Token** をクリックします。
 
 	![postman add auth](images/1E-postman-add-auth.png)
 

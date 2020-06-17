@@ -521,8 +521,9 @@ Cloud9 のサイドバーでこれらのファイルを探して、コードを�
 	* 次に、 **Import from Link** から以下のリンクを指定します。
 
 		`https://raw.githubusercontent.com/aws-samples/aws-serverless-security-workshop/master/src/test-events/Customize_Unicorns.postman_collection.json`
-	* 次に、 **Import from Link** から以下のリンクを指定します。
-	
+		
+		
+		
 		<img src="images/0F-import-postman.png" width="50%" />
 	
 1. 画面左側に、`Customize_Unicorns` というコレクションが表示されます。
