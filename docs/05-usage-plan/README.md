@@ -167,11 +167,11 @@ APIの呼出し元に基づいてリクエスト数を集計するために、AP
 
 1. Postmanを使ってテストします。API が APIキーを強制するようになったので、API キーのヘッダーを含めないとリクエストは失敗します。
 
-  以前と同じように Postman を使ってリクエストを送信してみてください。**403 Forbidden** というステータスコードと `{{"message". "Forbidden"}}` のレスポンスが返ってくるはずです。
+	以前と同じように Postman を使ってリクエストを送信してみてください。**403 Forbidden** というステータスコードと `{{"message". "Forbidden"}}` のレスポンスが返ってくるはずです。
 
-  > モジュール1を完了しており、**401 Unauthorized** が返ってくる場合は、アクセストークンの有効期限が切れている可能性が高いです。Postmanを使って新しいアクセストークンを要求して、もう一度試してみてください。
+	> モジュール1を完了しており、**401 Unauthorized** が返ってくる場合は、アクセストークンの有効期限が切れている可能性が高いです。Postmanを使って新しいアクセストークンを要求して、もう一度試してみてください。
 
-1. API キー のリクエストヘッダーを追加するには、**Header** タブに移動して 
+1. API キー のリクエストヘッダーを追加するには、Postmanの **Header** タブに移動して 
 	* header keyに`x-api-key` を入力します
 	* モジュール5Bで使用量プランに追加したAPIキーの値を入力します:
 		* モジュール1完了の場合: Cognito の app Client ID と同様
@@ -213,7 +213,7 @@ APIの呼出し元に基づいてリクエスト数を集計するために、AP
 	sam validate -t template.yaml
 	```
 
-1.  変更をでプロします。
+1.  変更をデプロイします。
 
 	```
 	 aws cloudformation package --output-template-file packaged.yaml --template-file template.yaml --s3-bucket $BUCKET --s3-prefix securityworkshop --region $REGION &&  aws cloudformation  deploy --template-file packaged.yaml --stack-name CustomizeUnicorns --region $REGION --parameter-overrides InitResourceStack=Secure-Serverless --capabilities CAPABILITY_IAM
