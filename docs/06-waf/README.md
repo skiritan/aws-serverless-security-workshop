@@ -1,6 +1,6 @@
 # モジュール 6: WAF 
 
-AWS WAF は Webアプリケーションファイアウォールで、アプリケーションの可用性に影響を与えたり、セキュリティを低下させたり、リソースを過剰に消費する一般的な攻撃から Web アプリケーションを保護します。例えば **SQLインジェクション** や **クロスサイトスクリプティング(XSS)**にマッチしたリクエストを拒否することができます。さらに、ルールを利用して**IPアドレス**や **地理情報**、**リクエストサイズ**、文字列や**正規表現**に基づいてリクエストをフィルタリングすることもでき、特定のユーザーエージェント、悪質なボット、コンテンツスクレーパーからの攻撃をブロックするためのルールを作成することも可能です。
+AWS WAF は Webアプリケーションファイアウォールで、アプリケーションの可用性に影響を与えたり、セキュリティを低下させたり、リソースを過剰に消費する一般的な攻撃から Web アプリケーションを保護します。例えば **SQLインジェクション** や **クロスサイトスクリプティング(XSS)** にマッチしたリクエストを拒否することができます。さらに、ルールを利用して**IPアドレス**や**地理情報**、**リクエストサイズ**、文字列や**正規表現**に基づいてリクエストをフィルタリングすることもでき、特定のユーザーエージェント、悪質なボット、コンテンツスクレーパーからの攻撃をブロックするためのルールを作成することも可能です。
 また、**AWS Marketplace** にある **マネージドルール** を利用して、すぐにOWASP Top10 や  共通脆弱性識別子（CVE）などの一般的な脅威から API を保護することもできます。
 
 このモジュールでは、WAF ACL を作成し、API Gateway にアタッチします。
@@ -38,13 +38,13 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 	モジュール 4 を完了した場合は、 設定した`admin` ユーザ のパスワードを入力してください。 
 また、**モジュール 2: Secrets Manager **を行った場合は、Secrets ManagerによってDBのパスワードがローテーションされていることもあります。新しいパスワードを取得するには、Secrets Managerに移動して**Retrieve secret value** ボタンをクリックしてください）
 	
-
-MySQL CLI プロンプトで show tablesコマンドを実行して `Custom_Unicorns` テーブルが削除されていることを確認します。
-	
+	MySQL CLI プロンプトで show tablesコマンドを実行して `Custom_Unicorns` テーブルが削除されていることを確認します。
+		
 	```
 	use unicorn_customization;
 	show tables;
 	```
+
 	出力例 
 	
 	![screenshot](images/recreate-table.png)
@@ -117,34 +117,36 @@ MySQL CLI プロンプトで show tablesコマンドを実行して `Custom_Unic
   * ここでは、リクエストをより検査するために複数のルールを追加します
   *  **Filter settings**で以下の４つのフィルターを追加します
 
-  	<table>
-  	  <tr>
-  	    <th></th>
-  	    <th>Part of the request to filter on</th>
-  	    <th>Transformation</th>
-  	  </tr>
-  	  <tr>
-  	    <td>1</td>
-  	    <td>Body</td>
-  	    <td>None</td>
-  	  </tr>
-  	  <tr>
-  	    <td>2</td>
-  	    <td>Body</td>
-  	    <td>URL decode</td>
-  	  </tr>
-  	  <tr>
-  	    <td>3</td>
-  	    <td>URI</td>
-  	    <td>URL decode</td>
-  	  </tr>
-  	  <tr>
-  	    <td>4</td>
-  	    <td>Query string</td>
-  	    <td>URL decode</td>
-  	  </tr>
-  	</table>
+  <table>
+    <tr>
+      <th></th>
+      <th>Part of the request to filter on</th>
+      <th>Transformation</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Body</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Body</td>
+      <td>URL decode</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>URI</td>
+      <td>URL decode</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Query string</td>
+      <td>URL decode</td>
+    </tr>
+  </table>
   * **Create**をクリックします。
+
+    
 
   ![screenshot](images/sql-condition.png)
 
@@ -161,9 +163,9 @@ MySQL CLI プロンプトで show tablesコマンドを実行して `Custom_Unic
 	* 名前として `LargeBodyMatchRule`を設定します
 	* **Rule type**は`Regular rule`を指定します
 	* Add conditions セクションで下記を選択します
-		* 	`does`
-		*  `match at least one of the filters in the size constraint condition `
-	*  `LargeBodyMatch`  -- さきほど作成したラージリクエストボディ制限の条件 
+		* `does`
+		* `match at least one of the filters in the size constraint condition `
+		*`LargeBodyMatch`  -- さきほど作成したラージリクエストボディ制限の条件 
 	
 	* **Create** をクリックします
 	
@@ -229,7 +231,7 @@ MySQL CLI プロンプトで show tablesコマンドを実行して `Custom_Unic
 	
 	**403 Forbidden** という応答で、リクエストがブロックされていることを確認してください。
 	
-	&#128161; **Note:** WAF の変更が有効になるまで 1 分ほどかかるかもしれません。正常な応答があった場合は何度か再試行してください。 &#128161;
+	&#128161; **Note:** WAF の変更が有効になるまで 数分ほどかかるかもしれません。正常な応答があった場合は何度か再試行してください。 &#128161;
 
 1. 次に、**GET /customizations/{id}**リクエストのリクエストURIに SQLインジェクション攻撃を加えたリクエストを試してみましょう。
 
@@ -263,7 +265,7 @@ Artilleryが `Authorization` ヘッダを付加して送信する設定になっ
 * リクエストサイズ上限
 * レート制限
 
-There are a lot more other types of protection you can enable, based on the types of risks you want to defend against この他にも、より多くの種類があり、防御したいリスクにもとづいて利用することができます。
+この他にも様々な種類が用意されており、防御したいリスクによって利用することができます。
 
 その他のルールについては、以下をチェックしてみてください。
 

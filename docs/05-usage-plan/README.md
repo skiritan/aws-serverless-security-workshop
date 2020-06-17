@@ -68,7 +68,7 @@ APIの呼出し元に基づいてリクエスト数を集計するために、AP
 
 
 <details>
-<summary><strong> モジュール1をまだ完了していない場合、以下を実行してください </strong></summary>
+<summary><strong>モジュール1をまだ完了していない場合、以下を実行してください </strong></summary>
 
 
 1. `template.yaml`の API Swagger の定義で、以下の行を追加します。
@@ -94,7 +94,7 @@ APIの呼出し元に基づいてリクエスト数を集計するために、AP
 </details>
 
 <details>
-<summary><strong> モジュール1を完了している場合、以下を実行してください </strong></summary>
+<summary><strong>モジュール1を完了している場合、以下を実行してください</strong></summary>
 
 
 1. `template.yaml`の API Swagger の定義で、以下の行を探します
@@ -180,7 +180,7 @@ APIの呼出し元に基づいてリクエスト数を集計するために、AP
 
 			<img src="images/5C-find-api-key.png" /> 
 	
-	これでリクエストが正常に処理できるよになります
+	これでリクエストが正常に処理できるようになります
 	
 	<img src="images/5C-explicit-API-key.png" /> 
 
