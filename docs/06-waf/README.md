@@ -36,7 +36,7 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 	```
 	
 	モジュール 4 を完了した場合は、 設定した`admin` ユーザ のパスワードを入力してください。 
-また、**モジュール 2: Secrets Manager **を行った場合は、Secrets ManagerによってDBのパスワードがローテーションされていることもあります。新しいパスワードを取得するには、Secrets Managerに移動して**Retrieve secret value** ボタンをクリックしてください）
+また、**モジュール 2: Secrets Manager** を行った場合は、Secrets ManagerによってDBのパスワードがローテーションされていることもあります。新しいパスワードを取得するには、Secrets Managerに移動して**Retrieve secret value** ボタンをクリックしてください）
 	
 	MySQL CLI プロンプトで show tablesコマンドを実行して `Custom_Unicorns` テーブルが削除されていることを確認します。
 		
@@ -60,7 +60,7 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 	>```ERROR 1062 (23000): Duplicate entry 'Placeholder company' for key 'NAME'```
 	> これは `company` テーブルを残したままスクリプトを実行したためです。
 	
-6. MySQL CLI プロンプトで `Custom_Unicorns` テーブルが作成されていることを確認します。
+1. MySQL CLI プロンプトで `Custom_Unicorns` テーブルが作成されていることを確認します。
 
 	```
 	show tables;
@@ -99,7 +99,7 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 
 1. 次に、2つの条件を作成していきます。まずはリクエストボディの最大サイズを制限する条件を作成します。
 
-	* **Size constraint conditions** セクションに移動し、 **Create condition**をクリックします
+	* **Size constraint conditions** セクションに移動し、**Create condition**をクリックします
 	* 名前として `LargeBodyMatch` を設定します。
 	* In Filter settings, add a filer on 　条件の設定で、フィルターを追加します。
 		*  	**Part of the request to filter on**: body
@@ -112,43 +112,42 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 	
 1. 次に、SQLインジェクション対策の条件を追加してみましょう。
 
-  * **SQL injection match conditions** セクションに移動し、**Create condition**をクリックします
-  * 名前として `SQLinjectionMatch`を設定します
-  * ここでは、リクエストをより検査するために複数のルールを追加します
-  *  **Filter settings**で以下の４つのフィルターを追加します
+	* **SQL injection match conditions** セクションに移動し、**Create condition**をクリックします
+	* 名前として `SQLinjectionMatch`を設定します
+	* ここでは、リクエストをより検査するために複数のルールを追加します
+	*  **Filter settings**で以下の４つのフィルターを追加します
 
-  <table>
-    <tr>
-      <th></th>
-      <th>Part of the request to filter on</th>
-      <th>Transformation</th>
-    </tr>
-    <tr>
-      <td>1</td>
-      <td>Body</td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <td>2</td>
-      <td>Body</td>
-      <td>URL decode</td>
-    </tr>
-    <tr>
-      <td>3</td>
-      <td>URI</td>
-      <td>URL decode</td>
-    </tr>
-    <tr>
-      <td>4</td>
-      <td>Query string</td>
-      <td>URL decode</td>
-    </tr>
-  </table>
-  * **Create**をクリックします。
+	<table>
+	<tr>
+	  <th></th>
+	  <th>Part of the request to filter on</th>
+	  <th>Transformation</th>
+	</tr>
+	<tr>
+	  <td>1</td>
+	  <td>Body</td>
+	  <td>None</td>
+	</tr>
+	<tr>
+	  <td>2</td>
+	  <td>Body</td>
+	  <td>URL decode</td>
+	</tr>
+	<tr>
+	  <td>3</td>
+	  <td>URI</td>
+	  <td>URL decode</td>
+	</tr>
+	<tr>
+	  <td>4</td>
+	  <td>Query string</td>
+	  <td>URL decode</td>
+	</tr>
+	</table>
 
-    
+	* **Create**をクリックします。
 
-  ![screenshot](images/sql-condition.png)
+	![screenshot](images/sql-condition.png)
 
 1. **Next** をクリックして**Create rules** ページに進みます。
 
@@ -158,7 +157,7 @@ AWS WAF は Webアプリケーションファイアウォールで、アプリ�
 
 1.   **ルール**は１つまたは複数の**条件**で構成することができます。
 まず、リクエストのボディサイズの条件を使ってルールを作成してみましょう。
-	
+
 	* **Create Rule** をクリック
 	* 名前として `LargeBodyMatchRule`を設定します
 	* **Rule type**は`Regular rule`を指定します
