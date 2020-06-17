@@ -1,6 +1,6 @@
 # モジュール0：初期セットアップ
 
-このモジュールでは、ワークショップ利用するサーバーレスアプリケーションをデプロイします。このアプリケーションは、Wild Rydes のパートナー企業が自社ブランドのソックスやケープ(マント)など、ユニコーンをカスタマイズして会社を宣伝できるように、REST API エンドポイントを有しています。下記は、展開するアーキテクチャの概要です。 
+このモジュールでは、ワークショップで利用するサーバーレスアプリケーションをデプロイします。このアプリケーションは、Wild Rydes のパートナー企業が自社ブランドのロゴのはいったソックスやケープ(マント)など、ユニコーンをカスタマイズして会社を宣伝できるように、REST API エンドポイントを有しています。下記は、展開するアーキテクチャの概要です。 
 
 ![base-architecture](images/00-base-architecture.png)
 
@@ -135,19 +135,20 @@ If you are using AWS Event Engine, an AWS CloudFormation stack should be automat
 	<img src="images/0B-cloud9-environments.png" width="80%" />
 
 1. *Secure-Serverless-Cloud9* 環境の ***Open IDE***  をクリックします
+	（Cloud9 環境が表示されない場合は、展開したリージョンにいるか確認ください） 
 	
-	![Cloud9 Open IDE](images/0C-open-ide.png)
-
+![Cloud9 Open IDE](images/0C-open-ide.png)
+	
 	Cloud9 を開けない場合は、以下を使用していることを確認してください。 
 	
 	* **Chrome** または **Firefox** のブラウザ
-	* サードパーティの Cookie が有効になっていることを確認　[**シューティングガイド**](https://docs.aws.amazon.com/cloud9/latest/user-guide/troubleshooting.html#troubleshooting-env-loading)
-
+* サードパーティの Cookie が有効になっていることを確認　[**シューティングガイド**](https://docs.aws.amazon.com/cloud9/latest/user-guide/troubleshooting.html#troubleshooting-env-loading)
+	
 1. 次のように、統合開発環境（IDE）環境が表示されます。AWS Cloud9 は、ブラウザのみでコードを記述、実行、デバッグできるクラウドベースの IDE です。また、ターミナルウィンドウでシェルコマンドも実行できます。 
 
 	![](images/0B-cloud9-start.png)
 
-	このワークショップを通して、 AWS Cloud9 IDE を開いたままにしてください。多くの作業で使用します。 
+	 
 
 1. このワークショップのコンテンツを取得します。Cloud9 ターミナルウィンドウ（画面下部）で、次のコマンドを実行して、このリポジトリのクローンを作成します。
 
@@ -157,7 +158,7 @@ If you are using AWS Event Engine, an AWS CloudFormation stack should be automat
    
    ![](images/0B-clone-repo.png)
 
-:bulb:**Tip:**  Keep an open scratch pad in Cloud9 for notes on resource IDs, etc. that you will need for future steps: 
+:bulb:**Tip:**  このワークショップを通して、 AWS Cloud9 IDE を開いたままにしてください。多くの作業で使用します。
 
 1.  Cloud9 で新しいファイルを作成します。
 
@@ -324,51 +325,51 @@ Cloud9 のサイドバーでこれらのファイルを探して、コードを�
     <td rowspan="4">unicornParts.js</td>
     <td>/horns</td>
     <td>GET</td>
-    <td>List customization options for horns</td>
+    <td>horn(角)のカスタマイズオプションの一覧</td>
   </tr>
   <tr>
     <td>/glasses</td>
     <td>GET</td>
-    <td>List customization options for glasses</td>
+    <td>glasses(メガネ)のカスタマイズオプションの一覧</td>
   </tr>
   <tr>
     <td>/socks</td>
     <td>GET</td>
-    <td>List customization options for socks</td>
+    <td>socks(ソックス)のカスタマイズオプションの一覧</td>
   </tr>
   <tr>
     <td>/capes</td>
     <td>GET</td>
-    <td>List customization options for capes</td>
+    <td>capes(マント)のカスタマイズオプションと一覧</td>
   </tr>
   <tr>
     <td rowspan="4">CustomizeUnicornFunction</td>
     <td rowspan="4">customizeUnicorn.js</td>
     <td>/customizations</td>
     <td>POST</td>
-    <td>Create unicorn customization</td>
+    <td>ユニコーンのカスタマイズの作成</td>
   </tr>
   <tr>
     <td>/customizations</td>
     <td>GET</td>
-    <td>List unicorn customization</td>
+    <td>ユニコーンのカスタマイズの一覧</td>
   </tr>
   <tr>
     <td>/customizations/{id}</td>
     <td>GET</td>
-    <td>Describe a unicorn customization</td>
+    <td>ユニコーンのカスタマイズの詳細</td>
   </tr>
   <tr>
     <td>/customizations/{id}</td>
     <td>DELETE</td>
-    <td>Delete a unicorn customization</td>
+    <td>ユニコーンのカスタマイズの削除</td>
   </tr>
   <tr>
     <td>ManagePartnerFunction</td>
     <td>managePartners.js</td>
     <td>/partners</td>
     <td>POST</td>
-    <td>Register a new partner company</td>
+    <td>パートナー企業の新規登録</td>
   </tr
 </table>
 
@@ -400,7 +401,7 @@ Cloud9 のサイドバーでこれらのファイルを探して、コードを�
 
 1. 表示されたパネルの **Path** パラメータに`/socks`と表示されているはずです。（表示のない場合は、ユニコーンの部品（例えば`/socks`、`/glasses`、`/capes`、`/horns`など）を選択してしてください。）そして**Run **をクリックします
 
-	> API を初めてローカルでテストする場合、Docker がプルダウンされている状態でセットアップされているため最大1〜2分かかります。
+	> API を初めてローカルでテストする場合、Docker がイメージを pull してセットアップするために最大1〜2分かかります。
 
 	レスポンスとして `200 OK` を取得できるはずです。
 	
@@ -434,7 +435,7 @@ Cloud9 のサイドバーでこれらのファイルを探して、コードを�
 1. `src` フォルダー内にいることを確認します
 
 	```
-	cd	~/environment/aws-serverless-security-workshop/src
+	cd ~/environment/aws-serverless-security-workshop/src
 	```
 
 1. 以下を実行して Lambda コードをパッケージ化し、S3 にアップロードし、コードをホストする S3 パスを参照するように CloudFormation テンプレートを更新します
@@ -465,7 +466,7 @@ Cloud9 のサイドバーでこれらのファイルを探して、コードを�
 	aws cloudformation describe-stacks --region $REGION --stack-name CustomizeUnicorns --query "Stacks[0].Outputs[0].OutputValue" --output text
 	```
 
-	出力例.
+	出力例:
 	```
 $ aws cloudformation describe-stacks --region $REGION --stack-name CustomizeUnicorns --query "Stacks[0].Outputs[0].OutputValue" --output text
 https://rs86gmk5bf.execute-api.us-west-2.amazonaws.com/dev/

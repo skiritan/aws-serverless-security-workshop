@@ -14,40 +14,39 @@
 
 1. AWS コンソールから AWS Secrets Manager に移動します
 	![AWS Secrets Manager Console](images/00-secrets-manager.png)
-1. *Store a new secret*をクリックします
-2. ***Credentials for RDS database*** を選択し、以下の値を入力します
-	
-	- Username: `admin`
-	- Password: `Corp123!`
-	- Select the encryption key: `DefaultEncryptionKey`.
+1. *新しいシークレット保存する*をクリックします
+2. ***RDSデータベースの認証情報*** を選択し、以下の値を入力します
+	- ユーザ名: `admin`
+	- パスワード: `Corp123!`
+	- 暗号化キーを選択してください: `DefaultEncryptionKey`.
 	![AWS Secrets Manager - Secret](images/01-store-new-secret.png)
-- Select your Aurora cluster ( `secure-serverless-aurora`で始まるものを選択)
+	- このシークレットがアクセスするRDSデータベース:  `secure-serverless-aurora`で始まるものを選択
 	
 		<img src="images/02-secret-select-db.png" width="60%"/>
 	
-1. *Next*をクリックし、以下の値を入力します
+1. *次*をクリックし、以下の値を入力します
 	
-	- Secret name: `secure-serverless-db-secret`
-	- Description: DB access for our Aurora.
+	- シークレットの名前: `secure-serverless-db-secret`
+	- オプションの説明: DB access for our Aurora.
 	![Secret name](images/03-secret-name.png)
-1. *Next*をクリックし、ローテーションを設定します
+1. *次*をクリックし、ローテーションを設定します
 	
-	- `Enable Rotation`をクリックします
-	- Select  as the rotation intervalとして`30 Days`を選択
-	- **Create a new Lambda Function to perform rotation**を選択
-	- Lambda 関数の名前を設定`aurora-rotation`
-	- **Use this secret** を選択
+	- `自動ローテーションを有効にする`をクリックします
+	- ローテーション間隔として`30 日`を選択
+	- **ローテーションを実行するための新しいLambda 関数を作成します**を選択
+	- 新しい Lambda 関数名: `aurora-rotation`
+	- **このシークレットを使う** を選択
 	![Rotation](images/04-rotation.png)
-1. *Next*をクリックし、 サンプルコードを確認してください。次のセクションで、Secrets Manager を使用するようにコードを修正するので、このコードを例として使用します。
-1. 最後に *Store* をクリックします
+1. *次*をクリックし、 サンプルコードを確認してください。次のセクションで、Secrets Manager を使用するようにコードを修正するので、このコードを例として使用します。
+1. 最後に *保存* をクリックします
 
 > FirefoxやChromeの拡張機能を使用している場合は注意してください。*LastPass*のような拡張機能の中には、以前に入力した値を変更してしまうものがあります。
 > 
-> シークレットを作成した後、 **Retrieve secret value**  をクリックして値を確認することができます。
+> シークレットを作成した後、 **シークレットの値を取得する**  をクリックして値を確認することができます。
 > 
 > ![](images/2A-verify-secret.png)
 
-## モジュール 2B: Lambda 関数に secrets manager の読取り権限を与える
+## モジュール 2B: Lambda 関数に Secrets Manager の読取り権限を与える
 
  Lambda 関数の実行ポリシーを変更して、Secrets Manager への API 呼び出しを許可します。
 
@@ -112,6 +111,7 @@ const client = new AWS.SecretsManager();
 ```
 
 上記の行を以下のコードに置き換えてください。
+※resolve(....); の要素をすべて置き換えます。
 
 ```javascript
             client.getSecretValue({SecretId: secretName}, function (err, data) {
